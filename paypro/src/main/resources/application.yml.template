@@ -1,0 +1,52 @@
+server:
+  port: 8889
+
+spring:
+  datasource:
+    url: jdbc:mysql://paypro-mysql:3306/paypro?useUnicode=true&characterEncoding=utf8
+    username: root
+    password: YOUR_MYSQL_PASSWORD  # 修改为你的 MySQL 密码
+    driver-class-name: com.mysql.jdbc.Driver
+
+  redis:
+    host: redis
+    port: 6379
+    password: ""  # 如果 Redis 有密码,在这里填写
+
+  mail:
+    host: smtp.qq.com  # 邮件服务器地址
+    port: 587
+    username: YOUR_EMAIL@qq.com  # 修改为你的邮箱
+    password: YOUR_EMAIL_AUTH_CODE  # 修改为邮箱授权码
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+paypro:
+  # 支付宝收款二维码 URL
+  alipayCustomQrUrl: https://qr.alipay.com/YOUR_QR_CODE
+
+  # 支付宝 userId (扫描"获取支付宝userId.jpg"获取)
+  alipayUserId: 2088XXXXXXXXXXXXXXX
+
+  # 支付宝当面付配置
+  alipayDfmAppId: 2021XXXXXXXXXXXXXXX
+  alipayDfmAppPrivateKey: YOUR_ALIPAY_PRIVATE_KEY
+  alipayDfmPublicKey: YOUR_ALIPAY_PUBLIC_KEY
+
+  # 网站域名
+  site: https://your-domain.com
+
+  # 管理员邮箱(接收支付通知)
+  receiver: admin@your-domain.com
+
+  # 发件邮箱
+  sender: noreply@your-domain.com
+
+logging:
+  level:
+    root: INFO
+    com.paypro: DEBUG
