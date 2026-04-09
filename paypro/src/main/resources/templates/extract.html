@@ -1,0 +1,141 @@
+<!doctype html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>提取兑换码 - ISaintPay</title>
+    <meta name="description" content="输入提取码获取您的兑换码">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="/css/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/extract.css">
+</head>
+<body>
+    <div class="container">
+        <a href="/recharge.html" class="back-link">
+            <i class="ri-arrow-left-line"></i>
+            返回充值中心
+        </a>
+        <h1>
+            <i class="ri-key-line"></i>
+            提取兑换码
+        </h1>
+        <p class="subtitle">请输入您的6位数字提取码</p>
+
+        <div class="input-group">
+            <label for="extractCode">提取码</label>
+            <input type="text" id="extractCode" maxlength="6" placeholder="000000" autocomplete="off">
+        </div>
+
+        <button class="btn" onclick="submitCode()">提取兑换码</button>
+
+        <div id="result" class="result">
+            <div class="result-title" id="resultTitle"></div>
+            <div id="resultContent"></div>
+        </div>
+
+        <div class="tips">
+            <div class="tips-title">温馨提示</div>
+            <ul>
+                <li>提取码有效期为24小时</li>
+                <li>每个提取码仅可使用一次</li>
+                <li>请妥善保管您的兑换码</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 自动聚焦输入框
+        document.getElementById('extractCode').focus();
+
+        // 只允许输入数字
+        document.getElementById('extractCode').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
+        // 回车提交
+        document.getElementById('extractCode').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                submitCode();
+            }
+        });
+
+        function submitCode() {
+            const code = document.getElementById('extractCode').value.trim();
+            const resultDiv = document.getElementById('result');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultContent = document.getElementById('resultContent');
+
+            // 验证输入
+            if (code.length !== 6) {
+                showError('请输入6位数字提取码');
+                return;
+            }
+
+            // 禁用按钮
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = '提取中...';
+
+            // 发送请求
+            fetch('/api/extract/use', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ code: code })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200 && data.data) {
+                    showSuccess(data.data);
+                } else {
+                    showError(data.msg || '提取失败，请检查提取码是否正确');
+                }
+            })
+            .catch(error => {
+                showError('网络错误，请稍后重试');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.textContent = '提取兑换码';
+            });
+        }
+
+        function showSuccess(redemptionCode) {
+            const resultDiv = document.getElementById('result');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultContent = document.getElementById('resultContent');
+
+            resultDiv.className = 'result success';
+            resultTitle.textContent = '提取成功！';
+            resultContent.innerHTML = `
+                <div class="redemption-code" id="redemptionCode">${redemptionCode}</div>
+                <button class="copy-btn" onclick="copyCode()">复制兑换码</button>
+            `;
+        }
+
+        function showError(message) {
+            const resultDiv = document.getElementById('result');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultContent = document.getElementById('resultContent');
+
+            resultDiv.className = 'result error';
+            resultTitle.textContent = '提取失败';
+            resultContent.innerHTML = `<div class="error-message">${message}</div>`;
+        }
+
+        function copyCode() {
+            const codeText = document.getElementById('redemptionCode').textContent;
+            navigator.clipboard.writeText(codeText).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '已复制！';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            }).catch(() => {
+                alert('复制失败，请手动复制');
+            });
+        }
+    </script>
+</body>
+</html>

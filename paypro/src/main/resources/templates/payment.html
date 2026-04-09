@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>支付中心 - ISaintPay</title>
+    <script src="/js/vue.global.min.js"></script>
+    <link href="/css/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css">
+    <!-- 内联配置加载器 -->
+    <script>
+    (function(){let c=null;async function load(){if(c)return c;try{const r=await fetch('/api/config/public');const d=await r.json();if(d.code===200)c=d.data;}catch(e){console.error('配置加载失败:',e);}return c||{};}async function apply(){const cfg=await load();if(!cfg||!Object.keys(cfg).length)return;const t=document.title.toLowerCase();if(cfg.payment_title&&t.includes('支付'))document.title=cfg.payment_title;if(cfg.siteName||cfg.common_logo)replace('PayPro',cfg.siteName||cfg.common_logo);if(cfg.siteTitle)replace('个人收款支付系统',cfg.siteTitle);if(cfg.common_footer){document.querySelectorAll('footer,.footer,[class*="footer"]').forEach(el=>{if(el.textContent.includes('©')||el.textContent.includes('PayPro'))el.textContent=cfg.common_footer;});}}function replace(old,neu){if(!neu||old===neu)return;const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode:n=>(n.parentElement.tagName==='SCRIPT'||n.parentElement.tagName==='STYLE')?NodeFilter.FILTER_REJECT:(n.textContent.includes(old)?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_SKIP)});const ns=[];let n;while(n=w.nextNode())ns.push(n);ns.forEach(n=>n.textContent=n.textContent.replace(new RegExp(old,'g'),neu));}window.SiteConfig={load,apply,get:k=>c?c[k]:null};if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',apply);}else{apply();}})();
+    </script>
+    <script src="/assets/js/api-config.js"></script>
+    <script src="/assets/js/http-util.js"></script>
+    <script src="/assets/js/qcode.min.js"></script>
+    <style>
+        .page-wrap { padding-top: 40px; padding-bottom: 40px; }
+        .header { text-align: center; margin-bottom: 24px; }
+        .title { font-size: 2rem; font-weight: 800; }
+        .content { display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; }
+        .content.single { grid-template-columns: 1fr; }
+        .card { padding: 24px; }
+        .summary { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .summary-item { padding: 16px; border-radius: 12px; background: rgba(255,255,255,0.03); }
+        .summary-item .label { color: var(--text-muted); font-size: 0.9rem; }
+        .summary-item .value { font-size: 1.25rem; font-weight: 700; }
+        .qr-wrap { display: flex; align-items: center; justify-content: center; height: 260px; }
+        .qr-image { max-width: 220px; width: 220px; height: 220px; object-fit: contain; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); }
+        .countdown { text-align: center; color: #F59E0B; font-weight: 700; margin-top: 16px; }
+        .actions { display: flex; gap: 12px; justify-content: center; margin-top: 16px; }
+        .tips { color: var(--text-muted); font-size: 0.95rem; margin-top: 16px; text-align: center; }
+        .badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border: 1px solid rgba(255,255,255,0.08); border-radius: 999px; color: var(--text-muted); font-size: 0.85rem; }
+        @media (max-width: 900px) { .content { grid-template-columns: 1fr; } }
+
+        .wechat-notice-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .wechat-notice-modal { background: rgba(255,255,255,0.95); border-radius: 15px; padding: 24px; max-width: 460px; width: 90%; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .wechat-notice-close { position: absolute; top: 12px; right: 16px; font-size: 22px; color: #666; cursor: pointer; background: none; border: none; padding: 0; }
+        .wechat-notice-title { font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 16px; text-align: left; }
+        .wechat-notice-content { text-align: center; margin-bottom: 16px; }
+        .wechat-notice-text { font-size: 15px; line-height: 1.6; color: #334155; margin-bottom: 12px; }
+        .wechat-paynum { color: #ef4444; font-weight: 800; font-size: 18px; }
+        .wechat-notice-image { text-align: center; margin: 16px 0; }
+        .wechat-notice-image img { max-width: 100%; height: auto; border-radius: 8px; }
+        .wechat-notice-btn { background: #1AAD19; color: white; border: none; padding: 10px 24px; border-radius: 8px; font-size: 15px; cursor: pointer; float: right; margin-top: 10px; }
+    </style>
+    
+</head>
+<body>
+<div id="app">
+    <div class="container page-wrap">
+        <div class="header">
+            <div class="badge"><i class="ri-secure-payment-line"></i><span>安全支付</span></div>
+            <h1 class="title">支付中心</h1>
+        </div>
+
+        <div class="content" :class="{ single: !showInfoPanel }">
+            <div class="glass card">
+                <div class="summary">
+                    <div class="summary-item">
+                        <div class="label">订单号</div>
+                        <div class="value">{{ orderInfo.orderId }}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="label">支付方式</div>
+                        <div class="value">{{ payTypeName }}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="label">标识号</div>
+                        <div class="value">{{ orderInfo.payNum }}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="label">支付金额</div>
+                        <div class="value">￥{{ orderInfo.money }}</div>
+                    </div>
+                </div>
+                <div v-if="orderInfo.description" style="margin-top: 20px; padding: 16px; border-radius: 12px; background: rgba(255,255,255,0.03); border-left: 3px solid var(--primary-color);">
+                    <div style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 8px;">商品介绍</div>
+                    <div style="color: var(--text-color); line-height: 1.6;">{{ orderInfo.description }}</div>
+                </div>
+                <div class="qr-wrap">
+                    <img v-if="qrImageUrl" :src="qrImageUrl" class="qr-image" alt="二维码" @error="handleImageError" @load="handleImageLoad">
+                    <canvas v-else id="qrcode-canvas" width="220" height="220" style="border-radius:12px"></canvas>
+                </div>
+                <div class="countdown" v-if="paymentStatus==='pending'">剩余时间：{{ formatCountdown }}</div>
+                <div class="countdown" v-if="paymentStatus==='success'" style="color:#22c55e">支付成功</div>
+                <div class="countdown" v-if="paymentStatus==='timeout'" style="color:#ef4444">订单已超时</div>
+                <div class="countdown" v-if="paymentStatus==='failed'" style="color:#ef4444">订单失败</div>
+                <div class="actions">
+                    <a href="recharge.html" class="btn btn-ghost">返回充值</a>
+                    <a v-if="orderInfo.payType==='alipay' && qrCodeUrl" :href="qrCodeUrl" class="btn btn-primary">打开支付宝（手机点击有效）</a>
+                </div>
+                <div class="tips" v-if="orderInfo.useLocalQrCode==='true'">请在付款备注中输入标识号：{{ orderInfo.payNum }}</div>
+            </div>
+
+            <div class="glass card" v-if="showInfoPanel">
+                <div class="tips">微信支付使用图片二维码展示；支付宝使用跳转链接或生成二维码。系统每2秒自动查询支付状态。</div>
+            </div>
+        </div>
+
+        <div class="footer"><p>&copy; 2026 ISaintPay System. Designed for Creators.</p></div>
+    </div>
+
+    <!-- 微信支付提示框（移动到#app作用域内） -->
+    <div v-if="showWechatNotice" class="wechat-notice-overlay" @click.self="closeWechatNotice">
+        <div class="wechat-notice-modal">
+            <button class="wechat-notice-close" @click="closeWechatNotice">×</button>
+            <div class="wechat-notice-title">请在备注中输入支付标识号</div>
+            <div class="wechat-notice-content">
+                <div class="wechat-notice-text">
+                    付款时请在备注中输入您的订单标识号：<span class="wechat-paynum">{{ orderInfo.payNum }}</span>
+                </div>
+                <div class="wechat-notice-text">若忘记输入或输入错误，可能导致支付失败</div>
+                <div class="wechat-notice-image">
+                    <img src="assets/images/wxremark.png" alt="微信备注示例">
+                </div>
+            </div>
+            <button class="wechat-notice-btn" @click="closeWechatNotice">知道了</button>
+            <div style="clear: both;"></div>
+        </div>
+    </div>
+
+    <!-- 微信赞赏提示框（移动到#app作用域内） -->
+    <div v-if="showWechatZsNotice" class="wechat-notice-overlay" @click.self="closeWechatZsNotice">
+        <div class="wechat-notice-modal">
+            <button class="wechat-notice-close" @click="closeWechatZsNotice" >×</button>
+            <div class="wechat-notice-title">请在备注中输入支付标识号</div>
+            <div class="wechat-notice-content">
+                <div class="wechat-notice-text">
+                    付款时请在备注中输入您的订单标识号：<span class="wechat-paynum">{{ orderInfo.payNum }}</span>
+                </div>
+                <div class="wechat-notice-text">若忘记输入或输入错误，可能导致支付失败</div>
+                <div class="wechat-notice-image">
+                    <img src="assets/images/wxzsremark.png" alt="微信备注示例">
+                </div>
+            </div>
+            <button class="wechat-notice-btn" @click="closeWechatZsNotice">知道了</button>
+            <div style="clear: both;"></div>
+        </div>
+    </div>
+
+    <!-- 支付宝提示框 -->
+    <div v-if="showAlipayNotice" class="wechat-notice-overlay" @click.self="closeAlipayNotice">
+        <div class="wechat-notice-modal">
+            <button class="wechat-notice-close" @click="closeAlipayNotice">×</button>
+            <div class="wechat-notice-title">请在备注中输入支付标识号</div>
+            <div class="wechat-notice-content">
+                <div class="wechat-notice-text">
+                    付款时请在备注中输入您的订单标识号：<span class="wechat-paynum">{{ orderInfo.payNum }}</span>
+                </div>
+                <div class="wechat-notice-text">若忘记输入或输入错误，可能导致支付失败</div>
+                <div class="wechat-notice-image">
+                    <img src="assets/images/alipay_tip.png" alt="支付宝备注示例">
+                </div>
+            </div>
+            <button class="wechat-notice-btn" @click="closeAlipayNotice">知道了</button>
+            <div style="clear: both;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+const { createApp } = Vue;
+
+createApp({
+    data(){
+        return {
+            orderInfo: {},
+            qrCodeUrl: '',
+            qrImageUrl: '',
+            qrImageUrlFallback: '',
+            paymentStatus: 'pending',
+            countdown: 300,
+            countdownTimer: null,
+            showWechatNotice: false,
+            showWechatZsNotice: false,
+            showAlipayNotice: false
+        }
+    },
+    computed:{
+        formatCountdown(){
+            const m = Math.floor(this.countdown/60);
+            const s = this.countdown%60;
+            return `${m}:${s.toString().padStart(2,'0')}`;
+        },
+        payTypeName(){
+            const map = { alipay:'支付宝', wechat:'微信支付', alipay_dmf:'支付宝', wechat_zs:'微信赞赏' };
+            return map[this.orderInfo.payType] || '未知方式';
+        },
+        showInfoPanel(){
+            return false;
+        }
+    },
+    mounted(){
+        this.initPayment();
+    },
+    beforeUnmount(){
+        if(this.countdownTimer){ clearInterval(this.countdownTimer); }
+    },
+    methods:{
+        getUrlParams(){
+            const p = new URLSearchParams(window.location.search);
+            return {
+                orderId: p.get('orderId'),
+                money: p.get('money') || 0,
+                payType: p.get('payType'),
+                payNum: p.get('payNum') || '',
+                actualAmount: p.get('actualAmount') || '',
+                customerQr: p.get('customerQr'),
+                picName: p.get('picName'),
+                qrCode: p.get('qrCode'),
+                payQrNum: p.get('payQrNum'),
+                useLocalQrCode: p.get('useLocalQrCode')
+            };
+        },
+        async initPayment(){
+            this.orderInfo = this.getUrlParams();
+            await this.createPaymentOrder();
+            if(this.orderInfo.payType==='wechat'){ this.showWechatNotice = true; }
+            if(this.orderInfo.payType==='wechat_zs'){ this.showWechatZsNotice = true; }
+            if(this.orderInfo.payType==='alipay'){ this.showAlipayNotice = true; }
+            await this.waitForQRCode();
+            await this.$nextTick();
+            await new Promise(r=>setTimeout(r,100));
+            await this.generateQRCode();
+            this.startCountdown();
+            this.startPaymentPolling();
+        },
+        async waitForQRCode(){
+            let t=0; const max=100;
+            while(t<max && typeof QRCode==='undefined'){ await new Promise(r=>setTimeout(r,100)); t++; }
+        },
+        async createPaymentOrder(){
+            try{
+                const amount = this.orderInfo.actualAmount || this.orderInfo.payNum;
+
+                /** 如果是使用本地二维码 */
+                if(this.orderInfo.useLocalQrCode === 'true'){
+                    if(this.orderInfo.customerQr === 'true'){
+                        this.qrImageUrl = `assets/qr/${this.orderInfo.payType}/custom.png`;
+                        return
+                    }
+                }
+
+                // 格式化金额为两位小数（如 21.22）
+                const formattedAmount = Number(amount).toFixed(2);
+
+                // 新格式：{payType}_fixed_{金额}_001.{ext}
+                // 序号固定为 001，先尝试 jpg，失败后尝试 png
+                const semanticName = `${this.orderInfo.payType}_fixed_${formattedAmount}_001`;
+
+                // 先尝试 .jpg
+                this.qrImageUrl = `assets/qr/${this.orderInfo.payType}/${semanticName}.jpg`;
+            }catch(e){
+                this.paymentStatus = 'failed';
+            }
+        },
+        async generateQRCode(){
+            if(this.qrImageUrl){ return; }
+            if(!this.qrCodeUrl){ return; }
+            if(typeof QRCode==='undefined'){ return; }
+            const canvas = document.getElementById('qrcode-canvas');
+            if(!canvas){ return; }
+            await QRCode.toCanvas(canvas, this.qrCodeUrl, { width:220, height:220, margin:1, color:{dark:'#000', light:'#fff'} });
+        },
+        startCountdown(){
+            this.countdownTimer = setInterval(()=>{
+                this.countdown--; if(this.countdown<=0){ this.paymentStatus='timeout'; clearInterval(this.countdownTimer); }
+            },1000);
+        },
+        startPaymentPolling(){
+            const timer = setInterval(async ()=>{
+                if(this.paymentStatus!=='pending'){ clearInterval(timer); return; }
+                try{
+                    const resp = await getRequest(API_CONFIG.ENDPOINTS.STATUS + "/" + this.orderInfo.orderId);
+                    if(resp.code==200){
+                        if(resp.data==1){ this.paymentStatus='success'; clearInterval(this.countdownTimer); clearInterval(timer); }
+                        else if(resp.data==2){ this.paymentStatus='failed'; clearInterval(timer); }
+                        else if(resp.data==5){ this.paymentStatus='timeout'; clearInterval(this.countdownTimer); clearInterval(timer); }
+                    }
+                }catch(e){
+                }
+            },2000);
+        },
+        handleImageError(event){
+            console.error('支付二维码图片加载失败:', this.qrImageUrl);
+
+            const retryCount = parseInt(event.target.dataset.retryCount || '0');
+            event.target.dataset.retryCount = String(retryCount + 1);
+
+            // 第1次失败：尝试切换扩展名（.jpg → .png）
+            if (retryCount === 0 && this.qrImageUrl.endsWith('.jpg')) {
+                const pngUrl = this.qrImageUrl.replace('.jpg', '.png');
+                event.target.src = pngUrl;
+                this.qrImageUrl = pngUrl;
+                console.log('尝试 .png 格式:', pngUrl);
+                return;
+            }
+
+            // 第2次失败：显示错误
+            console.error('二维码文件不存在');
+            this.paymentStatus='failed';
+        },
+        handleImageLoad(){ }
+        ,closeWechatNotice(){ this.showWechatNotice = false; },
+        closeWechatZsNotice(){ this.showWechatZsNotice = false; },
+        closeAlipayNotice(){ this.showAlipayNotice = false; }
+    }
+}).mount('#app');
+</script>
+</body>
+</html>

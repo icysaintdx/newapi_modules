@@ -1,0 +1,334 @@
+/* Saint Code - Dark Theme (SPA Pages) */
+
+/* ===== Global ===== */
+html.theme-dark body,
+html.theme-dark #root {
+    background: #0d0d0d !important;
+    color: #fff !important;
+}
+
+/* ===== Header ===== */
+html.theme-dark .semi-layout-header {
+    background: rgba(26, 26, 26, 0.95) !important;
+    backdrop-filter: blur(10px) !important;
+    border-bottom: 1px solid #333 !important;
+}
+
+html.theme-dark .semi-header-right {
+    justify-content: center !important;
+}
+
+html.theme-dark .semi-button.semi-button-borderless {
+    color: #aaa !important;
+}
+
+html.theme-dark .semi-button.semi-button-borderless:hover {
+    background: rgba(102, 126, 234, 0.15) !important;
+    color: #667eea !important;
+}
+
+html.theme-dark .semi-avatar {
+    background: #333 !important;
+    border: 2px solid #667eea !important;
+}
+
+/* ===== Sidebar / Navigation ===== */
+html.theme-dark .semi-layout-sider {
+    background: #111 !important;
+    border-right: 1px solid #222 !important;
+}
+
+html.theme-dark .semi-navigation {
+    background: transparent !important;
+}
+
+html.theme-dark .semi-navigation-item-text {
+    color: #aaa !important;
+    transition: color 0.2s !important;
+}
+
+html.theme-dark .semi-navigation-item:hover .semi-navigation-item-text {
+    color: #667eea !important;
+}
+
+html.theme-dark .semi-navigation-item.semi-navigation-item-selected .semi-navigation-item-text {
+    color: #667eea !important;
+}
+
+html.theme-dark .semi-navigation-item {
+    border-radius: 8px !important;
+    margin: 2px 8px !important;
+}
+
+html.theme-dark .semi-navigation-item:hover {
+    background: rgba(102, 126, 234, 0.1) !important;
+}
+
+html.theme-dark .semi-navigation-item.semi-navigation-item-selected {
+    background: rgba(102, 126, 234, 0.15) !important;
+}
+
+html.theme-dark .semi-navigation-item-icon {
+    color: #888 !important;
+}
+
+html.theme-dark .semi-navigation-item:hover .semi-navigation-item-icon {
+    color: #667eea !important;
+}
+
+html.theme-dark .semi-navigation-subtitle {
+    color: #555 !important;
+    font-weight: 600 !important;
+    letter-spacing: 1px !important;
+    text-transform: uppercase !important;
+    font-size: 0.65rem !important;
+}
+
+html.theme-dark .semi-divider {
+    border-color: #222 !important;
+}
+
+/* ===== Main Content ===== */
+html.theme-dark main {
+    background: #0d0d0d !important;
+    color: #fff !important;
+}
+
+html.theme-dark .semi-typography {
+    color: #ccc !important;
+}
+
+html.theme-dark .semi-typography-primary {
+    color: #fff !important;
+}
+
+html.theme-dark .semi-typography-secondary {
+    color: #888 !important;
+}
+
+html.theme-dark h1, html.theme-dark h2, html.theme-dark h3, html.theme-dark h4, html.theme-dark h5, html.theme-dark h6 {
+    color: #fff !important;
+}
+
+/* ===== Cards ===== */
+html.theme-dark .semi-card {
+    background: #1a1a1a !important;
+    border: 1px solid #333 !important;
+    border-radius: 12px !important;
+    transition: border-color 0.3s, box-shadow 0.3s !important;
+}
+
+html.theme-dark .semi-card:hover {
+    border-color: rgba(102, 126, 234, 0.5) !important;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.1) !important;
+}
+
+/* ===== Tables ===== */
+html.theme-dark .semi-table {
+    color: #ccc !important;
+}
+
+html.theme-dark .semi-table-thead > tr > th {
+    background: #222 !important;
+    color: #888 !important;
+    border-bottom: 1px solid #333 !important;
+    font-weight: 600 !important;
+}
+
+html.theme-dark .semi-table-tbody > tr > td {
+    border-bottom: 1px solid #222 !important;
+    color: #ccc !important;
+}
+
+html.theme-dark .semi-table-tbody > tr:hover > td {
+    background: rgba(102, 126, 234, 0.05) !important;
+}
+
+html.theme-dark .semi-table-wrapper {
+    border-radius: 12px !important;
+    border: 1px solid #333 !important;
+    overflow: hidden !important;
+}
+
+/* ===== Tags ===== */
+html.theme-dark .semi-tag {
+    background: #222 !important;
+    color: #ccc !important;
+    border: 1px solid #444 !important;
+}
+
+html.theme-dark .semi-tag-green {
+    background: rgba(34, 197, 94, 0.1) !important;
+    color: #22c55e !important;
+    border-color: rgba(34, 197, 94, 0.3) !important;
+}
+
+html.theme-dark .semi-tag-blue {
+    background: rgba(102, 126, 234, 0.15) !important;
+    color: #667eea !important;
+    border-color: rgba(102, 126, 234, 0.3) !important;
+}
+
+/* ===== Buttons ===== */
+html.theme-dark .semi-button-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border: none !important;
+    color: #fff !important;
+}
+
+html.theme-dark .semi-button-primary:hover {
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3) !important;
+}
+
+html.theme-dark .semi-button-secondary {
+    background: #2a2a2a !important;
+    border: 1px solid #444 !important;
+    color: #ccc !important;
+}
+
+/* ===== Tabs ===== */
+html.theme-dark .semi-tabs-tab {
+    color: #888 !important;
+}
+
+html.theme-dark .semi-tabs-tab-active .semi-tabs-tab-text {
+    color: #667eea !important;
+}
+
+html.theme-dark .semi-tabs-bar {
+    border-color: #333 !important;
+}
+
+/* ===== Inputs ===== */
+html.theme-dark .semi-input {
+    background: #1a1a1a !important;
+    border-color: #333 !important;
+    color: #fff !important;
+}
+
+html.theme-dark .semi-input:focus {
+    border-color: #667eea !important;
+}
+
+html.theme-dark .semi-input-wrapper-focus {
+    border-color: #667eea !important;
+}
+
+html.theme-dark .semi-form-field-label {
+    color: #888 !important;
+}
+
+/* ===== Select ===== */
+html.theme-dark .semi-select {
+    background: #1a1a1a !important;
+    border-color: #333 !important;
+    color: #fff !important;
+}
+
+html.theme-dark .semi-select-selection {
+    background: #1a1a1a !important;
+    color: #fff !important;
+}
+
+/* ===== Switch ===== */
+html.theme-dark .semi-switch {
+    background: #444 !important;
+}
+
+html.theme-dark .semi-switch-checked {
+    background: #667eea !important;
+}
+
+/* ===== Progress ===== */
+html.theme-dark .semi-progress-line-rail {
+    background: #333 !important;
+}
+
+html.theme-dark .semi-progress-line-path {
+    stroke: #667eea !important;
+}
+
+/* ===== Modal ===== */
+html.theme-dark .semi-modal-content {
+    background: #1a1a1a !important;
+    border-color: #333 !important;
+}
+
+html.theme-dark .semi-modal-header {
+    color: #fff !important;
+}
+
+html.theme-dark .semi-modal-body {
+    color: #ccc !important;
+}
+
+html.theme-dark .semi-modal-footer {
+    background: #1a1a1a !important;
+}
+
+/* ===== Banner ===== */
+html.theme-dark .semi-banner {
+    background: rgba(102, 126, 234, 0.1) !important;
+    border: 1px solid rgba(102, 126, 234, 0.3) !important;
+    border-radius: 12px !important;
+    color: #aaa !important;
+}
+
+/* ===== Visactor Canvas (charts) ===== */
+html.theme-dark canvas[id*="visactor_window"] {
+    background: #0d0d0d !important;
+}
+
+html.theme-dark [class*="visactor"],
+html.theme-dark [class*="chart"],
+html.theme-dark [class*="apexcharts"] {
+    background: #0d0d0d !important;
+}
+
+html.theme-dark .apexcharts-canvas .apexcharts-grid,
+html.theme-dark .apexcharts-canvas .apexcharts-gridlines line {
+    stroke: #333 !important;
+}
+
+html.theme-dark .apexcharts-canvas .apexcharts-text {
+    fill: #888 !important;
+}
+
+html.theme-dark .apexcharts-canvas .apexcharts-legend-text {
+    color: #aaa !important;
+}
+
+/* ===== Scrollbar ===== */
+html.theme-dark ::-webkit-scrollbar { width: 6px !important; height: 6px !important; }
+html.theme-dark ::-webkit-scrollbar-track { background: transparent !important; }
+html.theme-dark ::-webkit-scrollbar-thumb { background: #333 !important; border-radius: 3px !important; }
+html.theme-dark ::-webkit-scrollbar-thumb:hover { background: #555 !important; }
+
+/* ===== Toast ===== */
+html.theme-dark [data-sonner-toast] {
+    background: #1a1a1a !important;
+    border: 1px solid #333 !important;
+    color: #fff !important;
+}
+
+/* ===== Pagination ===== */
+html.theme-dark .semi-pagination-item {
+    background: #1a1a1a !important;
+    border-color: #333 !important;
+    color: #ccc !important;
+}
+
+html.theme-dark .semi-pagination-item-active {
+    background: #667eea !important;
+    border-color: #667eea !important;
+    color: #fff !important;
+}
+
+/* ===== Register / Reset Pages ===== */
+html.theme-dark .auth-page-wrapper { background: #0d0d0d !important; }
+html.theme-dark .auth-page-wrapper .semi-card { background: #1a1a1a !important; border: 1px solid #333 !important; border-radius: 16px !important; padding: 2.5rem !important; }
+html.theme-dark .auth-page-wrapper input:not([type=hidden]):not([type=checkbox]) { background: #0d0d0d !important; border: 1px solid #333 !important; border-radius: 8px !important; color: #fff !important; padding: 0.875rem 1rem !important; }
+html.theme-dark .auth-page-wrapper input:focus { border-color: #667eea !important; }
+html.theme-dark .auth-page-wrapper label { color: #aaa !important; }
+html.theme-dark .auth-page-wrapper .semi-button-primary { background: linear-gradient(135deg, #667eea, #764ba2) !important; border: none !important; border-radius: 8px !important; color: #fff !important; height: auto !important; padding: 0.875rem 2rem !important; font-weight: 600 !important; }
+html.theme-dark .auth-page-wrapper a { color: #667eea !important; }

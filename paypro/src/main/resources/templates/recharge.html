@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>充值中心 - ISaintPay</title>
+    <script src="/js/vue.global.min.js"></script>
+    <link href="/css/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css">
+    <!-- 内联配置加载器 -->
+    <script>
+    (function(){let c=null;async function load(){if(c)return c;try{const r=await fetch('/api/config/public');const d=await r.json();if(d.code===200)c=d.data;}catch(e){console.error('配置加载失败:',e);}return c||{};}async function apply(){const cfg=await load();if(!cfg||!Object.keys(cfg).length)return;const t=document.title.toLowerCase();if(cfg.recharge_title&&(t.includes('充值')||t.includes('购卡')))document.title=cfg.recharge_title;if(cfg.siteName||cfg.common_logo)replace('PayPro',cfg.siteName||cfg.common_logo);if(cfg.siteTitle)replace('个人收款支付系统',cfg.siteTitle);if(cfg.common_footer){document.querySelectorAll('footer,.footer,[class*="footer"]').forEach(el=>{if(el.textContent.includes('©')||el.textContent.includes('PayPro'))el.textContent=cfg.common_footer;});}}function replace(old,neu){if(!neu||old===neu)return;const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode:n=>(n.parentElement.tagName==='SCRIPT'||n.parentElement.tagName==='STYLE')?NodeFilter.FILTER_REJECT:(n.textContent.includes(old)?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_SKIP)});const ns=[];let n;while(n=w.nextNode())ns.push(n);ns.forEach(n=>n.textContent=n.textContent.replace(new RegExp(old,'g'),neu));}window.SiteConfig={load,apply,get:k=>c?c[k]:null};if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',apply);}else{apply();}})();
+    </script>
+    <script src="/assets/js/api-config.js"></script>
+    <script src="/assets/js/http-util.js"></script>
+    <style>
+        .page-wrap {
+            padding-top: 60px;
+            padding-bottom: 60px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .content {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 32px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            padding: 32px;
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .section-title i {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+        
+        .amounts {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .amount {
+            padding: 24px 16px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all .3s ease;
+            background: rgba(255,255,255,0.03);
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .amount:hover {
+            border-color: var(--primary-color);
+            background: rgba(99,102,241,.1);
+            transform: translateY(-2px);
+        }
+        
+        .amount.active {
+            border-color: var(--primary-color);
+            background: rgba(99,102,241,.15);
+            box-shadow: 0 4px 12px rgba(99,102,241,0.2);
+        }
+        
+        .custom {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            margin-bottom: 32px;
+        }
+        
+        .custom input {
+            flex: 1;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.03);
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: all .3s ease;
+        }
+        
+        .custom input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+        }
+        
+        .methods {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 20px;
+            margin-bottom: 32px;
+        }
+        
+        .method {
+            padding: 24px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+            transition: all .3s ease;
+            background: rgba(255,255,255,0.03);
+            position: relative;
+        }
+        
+        .method:hover:not(.disabled) {
+            border-color: var(--primary-color);
+            background: rgba(99,102,241,.1);
+            transform: translateY(-2px);
+        }
+        
+        .method.active {
+            border-color: var(--primary-color);
+            background: rgba(99,102,241,.15);
+            box-shadow: 0 4px 12px rgba(99,102,241,0.2);
+        }
+        
+        .method.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: rgba(255,255,255,0.02);
+        }
+        
+        .method.recommended {
+            border: 2px solid var(--primary-color);
+            background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.15));
+            position: relative;
+        }
+
+        .method.recommended::before {
+            content: '推荐';
+            position: absolute;
+            top: -1px;
+            right: -1px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 4px 12px;
+            border-radius: 0 14px 0 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .method-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+        
+        .method-icon {
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+        }
+        
+        .method-info {
+            flex: 1;
+        }
+        
+        .method-name {
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+        
+        .method-description {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+        
+        .method-status {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 12px;
+            margin-top: 8px;
+        }
+        
+        .method-status.available {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+        }
+        
+        .method-status.unavailable {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+        
+        .night-notice {
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .night-notice i {
+            font-size: 1.2rem;
+        }
+        
+        .method i {
+            font-size: 1.5rem;
+        }
+        
+        .field {
+            display: grid;
+            gap: 16px;
+            margin-top: 32px;
+        }
+        
+        .field input {
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.03);
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: all .3s ease;
+        }
+        
+        .field input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+        }
+        
+        .summary {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+        
+        .summary-item {
+            padding: 20px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: all .3s ease;
+        }
+        
+        .summary-item:hover {
+            border-color: rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .summary-item .label {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+        }
+        
+        .summary-item .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+        
+        .actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 32px;
+        }
+        
+        .msg {
+            margin-top: 20px;
+            text-align: center;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+        
+        .msg.error {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        
+        .msg.success {
+            color: #22c55e;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 40px 20px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            border: 1px dashed rgba(255,255,255,0.1);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        
+        @media (max-width: 900px) {
+            .content {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+            
+            .amounts {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .methods {
+                grid-template-columns: 1fr;
+            }
+            
+            .actions {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .actions .btn {
+                width: 100%;
+                max-width: 200px;
+                justify-content: center;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .page-wrap {
+                padding-top: 40px;
+                padding-bottom: 40px;
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+            
+            .card {
+                padding: 24px;
+            }
+            
+            .amounts {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="container page-wrap">
+        <div class="header">
+            <h1 class="title">
+                <i class="ri-wallet-3-line"></i> 充值中心
+            </h1>
+            <p class="subtitle">选择充值金额和支付方式</p>
+        </div>
+
+        <div class="content">
+            <div class="glass card">
+                <div class="section-title">
+                    <i class="ri-money-dollar-circle-line"></i> 金额
+                </div>
+                <div v-if="productList.length > 0" class="amounts">
+                    <div class="amount"
+                         v-for="product in productList"
+                         :key="product.id"
+                         :class="{active: selectedProductId === product.id && !customAmount}"
+                         @click="selectProduct(product)"
+                         :title="product.description">
+                        <div style="font-size: 1.25rem; font-weight: 600; color: var(--text-color);">￥{{ formatMoney(product.money) }}</div>
+                        <div style="font-size: 12px; margin-top: 8px; color: var(--text-muted);">
+                            {{ product.productName }}
+                        </div>
+                    </div>
+                </div>
+                <div v-else class="empty-state">
+                    <i class="ri-shopping-cart-line"></i>
+                    <div>暂无商品配置</div>
+                </div>
+                <div class="custom">
+                    <input type="number" min="1" step="1" placeholder="自定义金额" v-model.number="customAmount">
+                    <a class="btn btn-ghost" @click="useCustom">
+                        <i class="ri-check-line"></i> 使用
+                    </a>
+                </div>
+
+                <div class="section-title">
+                    <i class="ri-credit-card-line"></i> 支付方式
+                </div>
+                <div v-if="hasNightDisabledMethods" class="night-notice">
+                    <i class="ri-moon-line"></i> 部分支付方式因需要手动确认，为了你的支付体验。在凌晨0:00-6:00期间暂不可用，请选择其他方式
+                </div>
+                <div class="methods">
+                    <div v-for="method in paymentMethods"
+                         :key="method.id"
+                         class="method"
+                         :class="{active: selectedPayment===method.id, disabled: !method.status, recommended: method.recommended}"
+                         @click="method.status ? selectPayment(method.id, method.useLocalQrCode) : null">
+                        <div class="method-header">
+                            <div class="method-icon">{{ method.icon }}</div>
+                            <div class="method-info">
+                                <div class="method-name">{{ method.name }}</div>
+                                <div class="method-description">{{ method.description }}</div>
+                            </div>
+                        </div>
+                        <div v-if="!method.status" class="method-status unavailable">
+                            <i class="ri-moon-line"></i> {{ getDisableReason(method) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field" v-if="formConfig.showDescription">
+                    <input type="text" placeholder="订单留言" v-model.trim="description">
+                </div>
+                <div class="field" v-if="formConfig.showEmail">
+                    <input type="email" :placeholder="formConfig.requireEmail ? '邮箱（必填，用于接收通知和订单标识）' : '邮箱（选填，用于接收通知）'" v-model.trim="email" :required="formConfig.requireEmail">
+                </div>
+
+                <div class="actions">
+                    <a class="btn btn-primary" @click="submitRecharge" :class="{disabled: !canSubmit}" :style="{ opacity: canSubmit ? 1 : 0.6 }">
+                        <i class="ri-arrow-right-line"></i> 发起支付
+                    </a>
+                </div>
+
+                <div class="msg" v-if="message">
+                    <span :class="messageType">{{ message }}</span>
+                </div>
+            </div>
+
+            <div class="glass card">
+                <div class="section-title">
+                    <i class="ri-file-list-line"></i> 订单摘要
+                </div>
+                <div class="summary">
+                    <div class="summary-item">
+                        <div class="label">充值金额</div>
+                        <div class="value">￥{{ finalAmount }}</div>
+                    </div>
+                    <div class="summary-item" v-if="selectedProductDescription">
+                        <div class="label">商品介绍</div>
+                        <div class="value">{{ selectedProductDescription }}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="label">支付方式</div>
+                        <div class="value">{{ payTypeName }}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="label">订单状态</div>
+                        <div class="value" style="color: var(--primary-color);">准备中</div>
+                    </div>
+                </div>
+                <div class="msg" style="margin-top:24px; color: var(--text-muted);">
+                    <i class="ri-info-line"></i> 提交后将跳转到支付页面完成支付
+                </div>
+            </div>
+        </div>
+
+        <div class="footer"><p>&copy; 2026 ISaintPay System. Designed for Creators.</p></div>
+    </div>
+</div>
+
+<script>
+const { createApp } = Vue;
+
+createApp({
+    data(){
+        return {
+            selectedProductId: null,
+            customAmount: null,
+            selectedPayment: 'alipay',
+            useLocalQrCode: false,
+            description: '',
+            email: '',
+            loading: false,
+            message: '',
+            messageType: '',
+            productList: [],
+            formConfig: {
+                showDescription: true,
+                showEmail: true,
+                requireEmail: true
+            },
+            paymentMethods: [
+                {
+                    id: 'alipay',
+                    name: '支付宝支付',
+                    description: '需备注，自动确认收款',
+                    icon: '🔵',
+                    status: true,
+                    allowNight: false,
+                    useLocalQrCode: false
+                },
+                {
+                    id: 'wechat',
+                    name: '微信支付',
+                    description: '需备注，自动确认收款',
+                    icon: '🟢',
+                    status: true,
+                    allowNight: true,
+                    useLocalQrCode: true
+                }
+            ]
+        }
+    },
+    computed:{
+        finalAmount(){
+            if(this.customAmount){ return Number(this.customAmount) || 0; }
+            if(this.selectedProductId){
+                const p = this.productList.find(x=>x.id===this.selectedProductId);
+                return p ? Number(p.money) : 0;
+            }
+            return 0;
+        },
+        canSubmit(){
+            const hasAmount = this.finalAmount > 0;
+            const hasPayment = !!this.selectedPayment;
+            const hasEmail = !this.formConfig.requireEmail || (this.formConfig.showEmail && !!this.email);
+            return hasAmount && hasPayment && hasEmail;
+        },
+        payTypeName(){
+            const method = this.paymentMethods.find(m => m.id === this.selectedPayment);
+            return method ? method.name : '未选择';
+        },
+        selectedProductDescription(){
+            if (this.selectedProductId) {
+                const product = this.productList.find(p => p.id === this.selectedProductId);
+                return product ? (product.description || product.productName) : '';
+            }
+            return '';
+        },
+        hasNightDisabledMethods(){
+            return this.isEarlyMorning() && this.paymentMethods.some(m => !m.allowNight);
+        }
+    },
+    methods:{
+        selectProduct(product){ this.selectedProductId = product.id; this.customAmount = null; this.clearMessages(); },
+        useCustom(){ /* 保持customAmount为最终金额来源 */ },
+        selectPayment(t,b){ this.selectedPayment = t;this.useLocalQrCode = b },
+        formatMoney(m){ if(m===0 || m){ return Number(m).toFixed(2); } return '0.00'; },
+        clearMessages(){ this.message=''; this.messageType=''; },
+        showError(msg){ this.message = msg; this.messageType = 'error'; },
+        showSuccess(msg){ this.message = msg; this.messageType = 'success'; },
+        isEarlyMorning(){ const now = new Date(); const hour = now.getHours(); return hour >= 0 && hour < 6; },
+        updatePaymentStatus(){ const isEarly = this.isEarlyMorning(); this.paymentMethods.forEach(method => { if (!method.allowNight && isEarly) { method.status = false; } }); },
+        getDisableReason(method){ if (!method.allowNight && this.isEarlyMorning()) { return '凌晨时段暂不可用'; } return '暂不可用'; },
+        async submitRecharge(){
+
+            // 添加自定义金额验证
+            if(this.customAmount && this.customAmount < 1){
+                this.showError('自定义金额不能小于1');
+                return;
+            }
+
+            if(!this.canSubmit){ this.showError('请选择金额和支付方式'); return; }
+            this.loading = true; this.clearMessages();
+            try{
+                const body = { money: this.finalAmount, productId: this.selectedProductId, payType: this.selectedPayment, description: this.description, nickName: '', custom: Boolean(this.customAmount), email: this.email };
+                let resp;
+                if(this.selectedPayment !== 'alipay_dmf'){ resp = await postRequest(API_CONFIG.ENDPOINTS.RECHARGE, body); } else { resp = await postRequest(API_CONFIG.ENDPOINTS.ALI_DFM, body); }
+                if(resp.code==200){
+                    this.showSuccess('已提交，正在跳转');
+                    const that = this;
+                    setTimeout(()=>{
+                        const url = `payment.html?orderId=${resp.data.id}&money=${resp.data.money}&payType=${resp.data.payType}&payNum=${resp.data.payNum}&actualAmount=${resp.data.actualAmount || resp.data.money}&customerQr=${resp.data.custom}&picName=${encodeURIComponent((resp.data.money||0).toFixed(2))}&qrCode=${resp.data.qrCode}&payQrNum=${resp.data.payQrNum}&useLocalQrCode=${that.useLocalQrCode}`;
+                        window.open(url, '_blank');
+                    },800);
+                } else {
+                    // 检查是否是自定义金额错误
+                    const errorMsg = resp.msg || resp.message || '';
+                    if(errorMsg.includes('不支持自定义金额')) {
+                        window.open('custom-amount-warning.html', '_blank');
+                    } else {
+                        this.showError(errorMsg || '提交失败，请稍后重试');
+                    }
+                }
+            }catch(e){
+                if((e.message||'').includes('超时')){ this.showError('网络超时，请稍后重试'); }
+                else if((e.message||'').includes('HTTP Error')){ this.showError('服务器错误，请稍后重试'); }
+                else { this.showError('提交失败，请稍后重试'); }
+            } finally { this.loading=false; }
+        }
+    },
+    mounted(){
+        if(typeof API_CONFIG==='undefined'){ this.showError('API配置加载失败'); }
+        this.updatePaymentStatus();
+
+        // 加载表单配置
+        (async ()=>{
+            try{
+                const configResp = await fetch('/api/config/public');
+                const configData = await configResp.json();
+                if(configData.code === 200 && configData.data){
+                    this.formConfig.showDescription = configData.data.showDescription === 'true';
+                    this.formConfig.showEmail = configData.data.showEmail === 'true';
+                    this.formConfig.requireEmail = configData.data.requireEmail === 'true';
+                }
+            }catch(e){
+                console.error('加载表单配置失败:', e);
+            }
+        })();
+
+        // 加载商品列表
+        (async ()=>{
+            try{
+                const req = { types: ['CODE','CODE_PAYPRO'] };
+                const resp = await postRequest(API_CONFIG.ENDPOINTS.PRODUCT_LIST, req);
+                if(resp.code===200 && resp.data){ this.productList = resp.data; }
+            }catch(e){ this.showError('获取商品列表失败'); }
+        })();
+    }
+}).mount('#app');
+</script>
+</body>
+</html>

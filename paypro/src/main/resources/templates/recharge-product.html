@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>充值中心</title>
+    <script src="/js/vue.global.min.js"></script>
+    <link href="/css/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css">
+    <script src="/assets/js/api-config.js"></script>
+    <script src="/assets/js/http-util.js"></script>
+    <style>
+        .page-wrap { padding-top: 40px; padding-bottom: 40px; }
+        .header { text-align: center; margin-bottom: 24px; }
+        .title { font-size: 2rem; font-weight: 800; }
+        .content { display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; }
+        .card { padding: 24px; }
+        .section-title { font-size: 1.125rem; font-weight: 700; margin-bottom: 12px; }
+        .amounts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .amount { padding: 12px 16px; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; text-align: center; transition: all .2s; }
+        .amount.active { border-color: var(--primary-color); background: rgba(99,102,241,.15); }
+        .payment-item { display:flex; align-items:center; gap:12px; padding:12px; border: 1px solid rgba(255,255,255,.08); border-radius:12px; cursor:pointer; transition: all .2s; }
+        .payment-item.active { border-color: var(--primary-color); background: rgba(99,102,241,.15); }
+        .payment-icon { width: 32px; height: 32px; display:flex; align-items:center; justify-content:center; }
+        .summary { margin-top: 12px; border-top: 1px solid rgba(255,255,255,.06); padding-top: 12px; }
+        .summary-item { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+        .label { color: var(--text-muted); }
+        .value { font-weight: 700; }
+        .msg { color: var(--text-muted); margin-top: 8px; }
+        .loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index: 9999; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--primary-color); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div v-if="loading" class="loading"><div class="spinner"></div></div>
+        <div class="container page-wrap">
+            <div class="header"><h1 class="title">充值中心</h1></div>
+            <div class="content">
+                <div class="glass card">
+                    <div class="section-title">商品</div>
+                    <div class="amounts">
+                        <div class="amount">
+                            ￥{{ amount || 0 }}
+                            <div style="font-size:12px; margin-top:6px; color: var(--text-muted);">{{ productName || '-' }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass card">
+                    <div class="section-title">支付方式</div>
+                    <div class="payment-list">
+                        <div class="payment-item" v-for="method in paymentMethods" :key="method.id"
+                             :class="{active: selectedPayment === method.id}"
+                             @click="selectPayment(method.id)">
+                            <div class="payment-icon"><i :class="['ri-xl', method.iconClass]"></i></div>
+                            <div>
+                                <div style="font-weight:700">{{ method.name }}</div>
+                                <div style="color: var(--text-muted); font-size: 12px;">{{ method.description }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="summary">
+                        <div class="summary-item"><div class="label">金额</div><div class="value">￥{{ amount || 0 }}</div></div>
+                        <div class="summary-item"><div class="label">方式</div><div class="value">{{ payTypeName }}</div></div>
+                        <div class="summary-item"><div class="label">用户</div><div class="value">{{ userId || '-' }}</div></div>
+                    </div>
+                    <div class="msg">提交后将跳转到支付页面完成支付</div>
+                    <div style="margin-top:12px"><a class="btn btn-primary" style="width:100%" :class="{disabled: !canSubmit}" @click="submitRecharge">立即充值</a></div>
+                </div>
+            </div>
+            <div class="footer"><p>&copy; 2026 ISaintPay System. Designed for Creators.</p></div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        const app = createApp({
+            data() {
+                return {
+                    customAmount: '',
+                    userId: '',
+                    productName: '',
+                    amount: '',
+                    selectedPayment: 'alipay',
+                    loading: false,
+                    errorMessage: '',
+                    successMessage: '',
+                    paymentMethods: [
+                        { id: 'alipay', name: '支付宝转账', description: '使用支付宝转账', iconClass: 'ri-alipay-fill' },
+                        { id: 'wechat', name: '微信支付', description: '使用微信扫码支付', iconClass: 'ri-wechat-pay-fill' },
+                        { id: 'alipay_dmf', name: '支付宝扫码付款', description: '扫码付款', iconClass: 'ri-scan-2-line' }
+                    ]
+                }
+            },
+            computed: {
+                canSubmit() {
+                    return this.amount > 0 && this.selectedPayment && this.userId !== "";
+                },
+                payTypeName(){
+                    const m = this.paymentMethods.find(x=>x.id===this.selectedPayment);
+                    return m ? m.name : '-';
+                }
+            },
+            methods: {
+                // 清除消息
+                clearMessages() {
+                    this.errorMessage = '';
+                    this.successMessage = '';
+                },
+                
+                // 显示错误消息
+                showError(message) {
+                    this.errorMessage = message;
+                    this.successMessage = '';
+                    setTimeout(() => {
+                        this.errorMessage = '';
+                    }, 5000);
+                },
+                
+                // 显示成功消息
+                showSuccess(message) {
+                    this.successMessage = message;
+                    this.errorMessage = '';
+                    setTimeout(() => {
+                        this.successMessage = '';
+                    }, 3000);
+                },
+                selectPayment(method) {
+                    this.selectedPayment = method;
+                    this.clearMessages();
+                },
+
+                // 获取商品信息
+                async fetchProductInfo() {
+                    if (!this.productId) return;
+
+                    this.loading = true;
+                    this.clearMessages();
+
+                    try {
+                        // 实际应用中应使用 httpUtil.get(API_CONFIG.ENDPOINTS.PRODUCT_DETAIL + this.productId)
+                        const response = await httpUtil.get(API_CONFIG.ENDPOINTS.PRODUCT_DETAIL + "?productId="+ this.productId);
+                         if (response.code === 200) {
+                             this.productName = response.data.productName;
+                             this.amount = response.data.money;
+                        } else {
+
+                        }
+
+                    } catch (error) {
+                        console.error('获取商品信息失败:', error);
+                        this.showError('获取商品信息失败，请稍后重试');
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                
+                // 发起充值请求
+                async submitRecharge() {
+                    if (!this.canSubmit) {
+                        this.showError('请选择充值金额和支付方式');
+                        return;
+                    }
+                    
+                    // httpUtil已通过全局单例模式初始化，直接使用即可
+                    
+                    this.loading = true;
+                    this.clearMessages();
+
+                    if(this.selectedPayment != 'alipay_dmf'){
+                    }
+
+                    try {
+                        // 构建充值请求数据
+                        const rechargeData = {
+                            money: this.amount,
+                            payType: this.selectedPayment,
+                            userId: this.userId,
+                            nickName: "",
+                            custom: false
+                        };
+
+                        // 发起充值请求
+                        let response;
+                        if(this.selectedPayment != 'alipay_dmf'){
+                           response = await httpUtil.post(API_CONFIG.ENDPOINTS.RECHARGE, rechargeData);
+                        } else {
+                           response = await httpUtil.post(API_CONFIG.ENDPOINTS.ALI_DFM, rechargeData);
+                        }
+                        console.log(response)
+                        if (response.code == 200) {
+                            this.showSuccess(`充值请求提交成功！订单号：${response.data.id}`);
+                            // 延迟跳转到支付页面
+                            setTimeout(() => {
+                                const paymentUrl = `payment.html?orderId=${response.data.id}&money=${response.data.money}&payType=${response.data.payType}&payNum=${response.data.payNum}&customerQr=${response.data.custom}&picName=${encodeURIComponent((response.data.money || 0).toFixed(2))}&qrCode=${response.data.qrCode}`;
+                                window.location.href = paymentUrl;
+                            }, 1000);
+                        } else {
+                            this.showError(response.message || '充值请求失败，请稍后重试');
+                        }
+                    } catch (error) {
+                        console.error('充值请求失败:', error);
+
+                        if (error.message.includes('超时')) {
+                            this.showError('网络超时，请检查网络连接后重试');
+                        } else if (error.message.includes('HTTP Error')) {
+                            this.showError('服务器错误，请稍后重试');
+                        } else {
+                            this.showError('充值请求失败，请稍后重试');
+                        }
+                    } finally {
+                        this.loading = false;
+                    }
+                }
+            },
+            
+            // 组件挂载时初始化
+            mounted() {
+                // 检查API_CONFIG是否已加载
+                if (typeof API_CONFIG === 'undefined') {
+                    console.error('API_CONFIG未定义，请检查api-config.js文件是否正确加载');
+                    this.showError('API配置加载失败，请刷新页面重试');
+                    return;
+                }
+                
+                // httpUtil已通过全局单例模式初始化，直接使用即可
+                const params = new URLSearchParams(window.location.search);
+                this.userId = params.get('userId');
+                this.productId = params.get('productId');
+                // 如果存在productId，则获取商品信息
+                if (this.productId) {
+                    this.fetchProductInfo();
+                }
+            }
+        });
+
+        app.mount('#app');
+    </script>
+</body>
+</html>

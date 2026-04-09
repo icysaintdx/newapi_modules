@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="design-page" content="true">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>重置密码 - Saint Code</title>
+    <link rel="icon" type="image/x-icon" href="/themes/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/themes/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/themes/apple-touch-icon.png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Fredoka', sans-serif; background: linear-gradient(135deg, #fff5f5 0%, #f0f9ff 50%, #f5f0ff 100%); color: #5a4a4a; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .top-bar { position: fixed; top: 0; left: 0; right: 0; padding: 1rem 2rem; display: flex; align-items: center; z-index: 100; }
+        .top-bar .home-link { text-decoration: none; font-family: 'Fredoka', sans-serif; font-size: 1.5rem; font-weight: 700; color: #ff6b9d; text-shadow: 2px 2px 0 #ffd5e5; transition: all 0.3s; }
+        .top-bar .home-link:hover { transform: scale(1.05); }
+        .reset-container { width: 100%; max-width: 420px; padding: 2rem; padding-top: 5rem; }
+        .logo { text-align: center; font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .logo a { text-decoration: none; color: #ff6b9d; text-shadow: 2px 2px 0 #ffd5e5; transition: transform 0.3s; display: inline-block; font-size: inherit; font-weight: inherit; }
+        .logo a:hover { transform: scale(1.05); }
+        .subtitle { text-align: center; color: #9a8a8a; margin-bottom: 2rem; }
+        .reset-box { background: #fff; padding: 2.5rem; border-radius: 24px; border: 3px solid #ffe4ec; box-shadow: 0 8px 25px rgba(255,182,193,0.2); }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; color: #9a8a8a; font-size: 0.875rem; font-weight: 500; }
+        .form-group input { width: 100%; padding: 0.875rem 1rem; background: #fff9fa; border: 2px solid #ffe4ec; border-radius: 50px; color: #5a4a4a; font-size: 1rem; font-family: 'Fredoka', sans-serif; }
+        .form-group input:focus { outline: none; border-color: #ff6b9d; box-shadow: 0 0 20px rgba(255,107,157,0.2); }
+        .btn { width: 100%; padding: 1rem; background: linear-gradient(135deg, #ff6b9d 0%, #ff9ec4 100%); color: #fff; border: none; border-radius: 50px; font-size: 1rem; font-weight: 600; cursor: pointer; font-family: 'Fredoka', sans-serif; transition: all 0.3s; box-shadow: 0 6px 20px rgba(255,107,157,0.4); }
+        .btn:hover { transform: scale(1.05) translateY(-2px); box-shadow: 0 10px 30px rgba(255,107,157,0.5); }
+        .links { margin-top: 1.5rem; text-align: center; }
+        .links a { color: #9a8a8a; text-decoration: none; font-size: 0.875rem; }
+        .links a:hover { color: #ff6b9d; }
+    </style>
+    <script src="/theme/theme-switcher.js"></script>
+</head>
+<body>
+    <div class="top-bar"><a href="/" class="home-link">Saint Code ✨</a></div>
+    <div class="reset-container">
+        <div class="logo"><a href="/">Saint Code ✨</a></div>
+        <p class="subtitle">重置你的密码</p>
+        <div class="reset-box">
+            <form id="reset-form">
+                <div class="form-group">
+                    <label>📧 邮箱</label>
+                    <input type="email" id="email" placeholder="请输入注册邮箱" required>
+                </div>
+                <div id="error-msg" style="color:#ff6b9d;font-size:0.875rem;margin-bottom:1rem;display:none;"></div>
+                <div id="success-msg" style="color:#22c55e;font-size:0.875rem;margin-bottom:1rem;display:none;"></div>
+                <button type="submit" class="btn" id="reset-btn">📬 发送重置邮件</button>
+            </form>
+            <div class="links">
+                <a href="/login">🔙 返回登录</a> · <a href="/register">📝 注册账号</a>
+            </div>
+        </div>
+    </div>
+    <script>
+    (function(){
+        var form=document.getElementById('reset-form');
+        var btn=document.getElementById('reset-btn');
+        var err=document.getElementById('error-msg');
+        var suc=document.getElementById('success-msg');
+        form.addEventListener('submit',function(e){
+            e.preventDefault();
+            btn.disabled=true;
+            btn.textContent='发送中...';
+            err.style.display='none';
+            suc.style.display='none';
+            fetch('/api/reset_password?email='+encodeURIComponent(document.getElementById('email').value)).then(function(r){return r.json();}).then(function(d){
+                if(d.success){
+                    suc.textContent='重置邮件已发送，请检查邮箱';
+                    suc.style.display='block';
+                    btn.textContent='📬 已发送';
+                }else{
+                    err.textContent=d.message||'发送失败';
+                    err.style.display='block';
+                    btn.disabled=false;
+                    btn.textContent='📬 发送重置邮件';
+                }
+            }).catch(function(){
+                err.textContent='网络错误，请重试';
+                err.style.display='block';
+                btn.disabled=false;
+                btn.textContent='📬 发送重置邮件';
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

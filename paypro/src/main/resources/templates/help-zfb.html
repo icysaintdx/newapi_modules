@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>支付宝官方个人渠道收款 - ISaintPay</title>
+    <script src="/js/vue.global.min.js" defer></script>
+    <link href="/css/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css">
+    <script src="/assets/js/api-config.js"></script>
+    <script src="/assets/js/http-util.js"></script>
+    <style>
+        .page-wrap {
+            padding-top: 40px;
+            padding-bottom: 60px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-content {
+            min-height: 600px;
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 32px;
+            text-align: center;
+            color: var(--text-color);
+        }
+
+        .help-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 28px;
+            transition: all .3s ease;
+            border-left: 4px solid var(--primary-color);
+            margin-bottom: 24px;
+        }
+
+        .help-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .help-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .help-card p, .help-card li {
+            line-height: 1.7;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .help-card ul {
+            padding-left: 24px;
+        }
+
+        .help-card li {
+            margin-bottom: 8px;
+        }
+
+        .tutorial-section {
+            margin: 40px 0;
+        }
+
+        .tutorial-image {
+            max-width: 100%;
+            margin: 30px auto;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all .3s ease;
+        }
+
+        .tutorial-image:hover {
+            transform: scale(1.02);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+        }
+
+        .tutorial-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all .3s ease;
+            border: 1px solid var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background: rgba(99, 102, 241, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
+        }
+
+        .faq-section {
+            margin: 40px 0;
+        }
+
+        .faq-item {
+            margin-bottom: 16px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .faq-question {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+            padding: 20px 24px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all .3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .faq-question:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .faq-question.active {
+            background: var(--primary-color);
+            color: white;
+            border-bottom: none;
+        }
+
+        .faq-answer {
+            padding: 0 24px;
+            max-height: 0;
+            overflow: hidden;
+            transition: all .3s ease;
+        }
+
+        .faq-answer.active {
+            padding: 24px;
+            max-height: 300px;
+        }
+
+        .contact-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(79, 70, 229, 0.2));
+            border-radius: 16px;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            padding: 32px;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .contact-card h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: var(--text-color);
+        }
+
+        .contact-info {
+            display: inline-block;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all .3s ease;
+        }
+
+        .contact-info:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .icon {
+            font-size: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .page-wrap {
+                padding-top: 24px;
+                padding-bottom: 40px;
+            }
+
+            .title {
+                font-size: 2rem;
+            }
+
+            .page-content {
+                padding: 20px;
+            }
+
+            .section-title {
+                font-size: 1.5rem;
+                margin-bottom: 24px;
+            }
+
+            .help-card {
+                padding: 20px;
+            }
+
+            .help-card h3 {
+                font-size: 1.1rem;
+            }
+
+            .tutorial-image {
+                margin: 20px auto;
+            }
+
+            .faq-question {
+                padding: 16px 20px;
+            }
+
+            .faq-answer.active {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="container page-wrap">
+        <div class="header">
+            <h1 class="title">
+                <i class="ri-question-line"></i> 帮助中心
+            </h1>
+            <p class="subtitle">关于支付宝官方个人渠道收款的详细说明</p>
+        </div>
+
+        <div class="glass-card">
+            <div class="page-content">
+                <h2 class="section-title">
+                    <i class="ri-alipay-line"></i> 支付宝官方个人渠道收款
+                </h2>
+
+                <div class="help-card">
+                    <h3>
+                        <i class="ri-shield-check-line icon"></i> 开通教程
+                    </h3>
+                    <p>
+                        进入充值页面充值成功后您将获取到开通教程，开通无需营业执照，完全免费，个人可申请签约
+                    </p>
+                    <p>
+                        <a href="recharge.html" class="btn-primary">
+                            <i class="ri-arrow-right-line"></i> 点我立即获取教程
+                        </a>
+                    </p>
+
+                    <!-- 教程示意图 -->
+                    <div class="tutorial-section">
+                        <div class="tutorial-image">
+                            <img src="/assets/images/zfb_open.jpg" alt="支付宝个人收款渠道开通教程示意图"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-section">
+                    <h3 style="font-size: 1.3rem; font-weight: 600; margin-bottom: 24px; color: var(--text-color); text-align: center;">
+                        <i class="ri-question-answer-line"></i> 常见问题
+                    </h3>
+
+                    <div class="faq-item" v-for="(faq, index) in faqList" :key="index">
+                        <div class="faq-question" :class="{ active: faq.isOpen }" @click="toggleFaq(index)">
+                            <span>{{ faq.question }}</span>
+                            <i :class="['ri', faq.isOpen ? 'ri-chevron-up' : 'ri-chevron-down']"></i>
+                        </div>
+                        <div class="faq-answer" :class="{ active: faq.isOpen }">
+                            <p>{{ faq.answer }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact-card">
+                    <h3>
+                        <i class="ri-headset-line"></i> 联系客服
+                    </h3>
+                    <div class="contact-info">
+                        <strong>邮箱支持：</strong>[[${supportMail}]]
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2026 ISaintPay 充值服务. 安全可靠的支付服务</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.addEventListener('DOMContentLoaded', function () {
+        if (typeof Vue === 'undefined') {
+            console.error('Vue未加载，请检查网络连接');
+            return;
+        }
+
+        const {createApp} = Vue;
+
+        createApp({
+            data() {
+                return {
+                    faqList: [
+                        {
+                            question: '开通需要提供什么资料？',
+                            answer: '申请时仅需填写你的姓名、手机号、邮件等信息，可无需营业执照。支付宝官方会对您的信息进行严格保密，确保您的个人信息安全。',
+                            isOpen: false
+                        },
+                        {
+                            question: '提交申请后开通成功需要多久？',
+                            answer: '08:00~20:00时间段申请预计3小时内办理成功（法定节假日顺延），由于需支付宝客服人工审核，请耐心等待！审核是支付宝官方审核！',
+                            isOpen: false
+                        },
+                        {
+                            question: '任何产业都能开通接入吗？',
+                            answer: '你开通的是支付宝官方的产品，由支付宝官方负责风控，不合法的业务请不要申请！我们只支持合法合规的业务接入，违反法律法规的业务将无法通过审核。',
+                            isOpen: false
+                        },
+                        {
+                            question: '收款有何限制？',
+                            answer: '若在申请时提交了营业执照，收款金额不受限制，未提供的话单笔最高是2000，单日最多20000。具体限额以支付宝官方规定为准，可能会根据账户情况进行调整。',
+                            isOpen: false
+                        },
+                        {
+                            question: '费率如何计算？',
+                            answer: '不提供营业执照基础版目前每笔交易为0.38%，全部由支付宝官方收取，若提供营业执照不限额版费率为0.6%，实际以签约时支付宝产品协议为准。',
+                            isOpen: false
+                        },
+                        {
+                            question: '遇到问题怎么办？',
+                            answer: '因为你申请的是支付宝官方的产品，任何问题都可以找支付宝官方的客服咨询',
+                            isOpen: false
+                        }
+                    ]
+                }
+            },
+            methods: {
+                toggleFaq(index) {
+                    this.faqList[index].isOpen = !this.faqList[index].isOpen;
+                }
+            }
+        }).mount('#app');
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,218 @@
+/* Saint Code - Pixel Theme (SPA Pages) */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+/* ===== Global ===== */
+html.theme-pixel body,
+html.theme-pixel #root {
+    background: #1a1a2e !important;
+    color: #fff !important;
+    font-family: 'Press Start 2P', cursive !important;
+    image-rendering: pixelated !important;
+}
+
+html.theme-pixel body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 16px 16px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+html.theme-pixel * { font-family: 'Press Start 2P', cursive !important; }
+
+/* ===== Header ===== */
+html.theme-pixel .MuiAppBar-root {
+    background: #16162a !important;
+    border-bottom: 4px solid #4a9eff !important;
+    box-shadow: 0 4px 0 #1a1a2e !important;
+}
+
+html.theme-pixel .MuiToolbar-root {
+    justify-content: center !important;
+}
+
+html.theme-pixel .MuiIconButton-root {
+    color: #888 !important;
+    border: 3px solid #333 !important;
+    border-radius: 0 !important;
+    box-shadow: 3px 3px 0 #1a1a2e !important;
+}
+
+html.theme-pixel .MuiIconButton-root:hover {
+    background: rgba(74, 158, 255, 0.1) !important;
+    color: #4a9eff !important;
+    border-color: #4a9eff !important;
+    transform: translate(2px, 2px) !important;
+    box-shadow: 1px 1px 0 #1a1a2e !important;
+}
+
+html.theme-pixel .MuiAvatar-root {
+    background: #1a1a2e !important;
+    border: 4px solid #4a9eff !important;
+    border-radius: 0 !important;
+    box-shadow: 4px 4px 0 #1a1a2e !important;
+}
+
+/* ===== Sidebar / Drawer ===== */
+html.theme-pixel .MuiDrawer-paper {
+    background: #16162a !important;
+    border-right: 4px solid #333 !important;
+    border-radius: 0 !important;
+}
+
+html.theme-pixel .MuiList-root { padding-top: 8px !important; }
+html.theme-pixel .MuiTypography-caption { color: #444 !important; font-size: 0.5rem !important; letter-spacing: 2px !important; padding: 0 16px !important; margin-bottom: 4px !important; }
+html.theme-pixel .MuiDivider-root { border-color: #333 !important; margin: 8px 0 !important; }
+
+html.theme-pixel .MuiListItemButton-root {
+    border-radius: 0 !important;
+    margin: 2px 4px !important;
+    color: #888 !important;
+    border: 3px solid transparent !important;
+    transition: all 0.1s !important;
+    font-size: 0.55rem !important;
+    line-height: 1.8 !important;
+}
+
+html.theme-pixel .MuiListItemButton-root:hover {
+    background: rgba(74, 158, 255, 0.08) !important;
+    color: #4a9eff !important;
+    border-color: #4a9eff !important;
+    transform: translate(-2px, -2px) !important;
+    box-shadow: 4px 4px 0 rgba(74, 158, 255, 0.2) !important;
+}
+
+html.theme-pixel .MuiListItemButton-root.Mui-selected,
+html.theme-pixel .MuiListItemButton-root[aria-current="page"] {
+    background: rgba(74, 158, 255, 0.15) !important;
+    color: #4a9eff !important;
+    border-color: #4a9eff !important;
+    box-shadow: 3px 3px 0 rgba(74, 158, 255, 0.3) !important;
+}
+
+html.theme-pixel .MuiListItemIcon-root { color: #666 !important; min-width: 36px !important; }
+html.theme-pixel .MuiListItemButton-root:hover .MuiListItemIcon-root { color: #4a9eff !important; }
+html.theme-pixel .MuiListItemText-root .MuiTypography-root { color: inherit !important; font-size: 0.55rem !important; }
+
+/* ===== Main Content ===== */
+html.theme-pixel main { background: transparent !important; color: #fff !important; }
+html.theme-pixel .MuiContainer-root { color: #fff !important; }
+html.theme-pixel h2, html.theme-pixel h3, html.theme-pixel h4 { color: #fff !important; }
+html.theme-pixel .MuiTypography-h2 { color: #fff !important; font-size: 1rem !important; }
+html.theme-pixel .MuiTypography-subtitle1 { color: #666 !important; font-size: 0.5rem !important; }
+html.theme-pixel .MuiTypography-body1, html.theme-pixel .MuiTypography-body2 { color: #aaa !important; font-size: 0.5rem !important; line-height: 1.8 !important; }
+html.theme-pixel .MuiTypography-caption { color: #444 !important; font-size: 0.45rem !important; }
+
+/* ===== Dashboard Cards ===== */
+html.theme-pixel .MuiPaper-elevation0 { background: #16162a !important; border: 4px solid #333 !important; border-radius: 0 !important; box-shadow: 6px 6px 0 #1a1a2e !important; transition: all 0.1s !important; }
+html.theme-pixel .MuiGrid-item .MuiPaper-root:hover { border-color: #4a9eff !important; transform: translate(-4px, -4px) !important; box-shadow: 10px 10px 0 rgba(74, 158, 255, 0.2) !important; }
+html.theme-pixel .MuiTypography-h3, html.theme-pixel .MuiTypography-h4 { color: #fff !important; font-size: 0.7rem !important; }
+html.theme-pixel .MuiLinearProgress-root { background: #333 !important; border-radius: 0 !important; height: 12px !important; border: 3px solid #444 !important; }
+html.theme-pixel .MuiLinearProgress-barColorPrimary { background: #4a9eff !important; }
+html.theme-pixel .MuiLinearProgress-barColorSuccess { background: #22c55e !important; }
+
+/* ===== Tabs ===== */
+html.theme-pixel .MuiButton-text { color: #666 !important; border: 3px solid transparent !important; border-radius: 0 !important; font-size: 0.5rem !important; }
+html.theme-pixel .MuiButton-text.Mui-selected { color: #4a9eff !important; background: rgba(74, 158, 255, 0.1) !important; border-color: #4a9eff !important; }
+html.theme-pixel .MuiButton-contained { background: #4a9eff !important; color: #fff !important; border: 4px solid #fff !important; border-radius: 0 !important; font-size: 0.55rem !important; box-shadow: 4px 4px 0 #1a1a2e !important; }
+html.theme-pixel .MuiButton-contained:hover { transform: translate(3px, 3px) !important; box-shadow: 1px 1px 0 #1a1a2e !important; background: #3d8ef5 !important; }
+
+/* ===== Tables ===== */
+html.theme-pixel .MuiTable-root { color: #aaa !important; }
+html.theme-pixel .MuiTableCell-head { background: #1a1a2e !important; color: #666 !important; border-bottom: 4px solid #333 !important; font-size: 0.5rem !important; }
+html.theme-pixel .MuiTableCell-body { border-bottom: 3px solid #222 !important; color: #aaa !important; font-size: 0.5rem !important; }
+html.theme-pixel .MuiTableRow-root:hover .MuiTableCell-body { background: rgba(74, 158, 255, 0.05) !important; }
+html.theme-pixel .MuiTableContainer-root { border-radius: 0 !important; border: 4px solid #333 !important; overflow: hidden !important; background: #16162a !important; box-shadow: 6px 6px 0 #1a1a2e !important; }
+
+/* ===== Tags / Chips ===== */
+html.theme-pixel .MuiChip-filled { background: #1a1a2e !important; color: #888 !important; border: 3px solid #444 !important; border-radius: 0 !important; font-size: 0.45rem !important; }
+html.theme-pixel .MuiChip-filledWarning { background: #1a1a2e !important; color: #ffd93d !important; border: 3px solid #ffd93d !important; border-radius: 0 !important; }
+html.theme-pixel .MuiChip-colorPrimary { background: #1a1a2e !important; color: #4a9eff !important; border: 3px solid #4a9eff !important; border-radius: 0 !important; }
+
+/* ===== Switches ===== */
+html.theme-pixel .MuiSwitch-root .MuiSwitch-track { background: #333 !important; border: 3px solid #555 !important; border-radius: 0 !important; }
+html.theme-pixel .MuiSwitch-root .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track { background: #4a9eff !important; border-color: #fff !important; }
+html.theme-pixel .MuiSwitch-thumb { background: #fff !important; border-radius: 0 !important; }
+
+/* ===== Inputs ===== */
+html.theme-pixel .MuiOutlinedInput-root { background: #1a1a2e !important; border: 4px solid #333 !important; border-radius: 0 !important; color: #fff !important; }
+html.theme-pixel .MuiOutlinedInput-notchedOutline { border: 4px solid #333 !important; border-radius: 0 !important; }
+html.theme-pixel .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline { border-color: #4a9eff !important; }
+html.theme-pixel .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline { border-color: #4a9eff !important; box-shadow: 4px 4px 0 rgba(74, 158, 255, 0.2) !important; }
+html.theme-pixel .MuiInputBase-input { color: #fff !important; font-size: 0.5rem !important; padding: 12px 16px !important; }
+html.theme-pixel .MuiFormLabel-root { color: #666 !important; font-size: 0.5rem !important; }
+
+/* ===== Modals ===== */
+html.theme-pixel .MuiModal-root .MuiPaper-root { background: #16162a !important; border: 4px solid #333 !important; border-radius: 0 !important; box-shadow: 8px 8px 0 #1a1a2e !important; }
+html.theme-pixel .MuiDialog-paper { background: #16162a !important; border: 4px solid #333 !important; border-radius: 0 !important; }
+html.theme-pixel .MuiDialogTitle-root { color: #fff !important; font-size: 0.7rem !important; }
+html.theme-pixel .MuiDialogContent-root { color: #aaa !important; font-size: 0.5rem !important; }
+html.theme-pixel .MuiDialogActions-root { background: #16162a !important; border-top: 4px solid #333 !important; }
+
+/* ===== Visactor Canvas (charts) ===== */
+html.theme-pixel canvas[id*="visactor_window"] { background: #1a1a2e !important; }
+html.theme-pixel [class*="visactor"], html.theme-pixel [class*="chart"], html.theme-pixel [class*="apexcharts"] { background: #1a1a2e !important; }
+html.theme-pixel .apexcharts-canvas .apexcharts-grid, html.theme-pixel .apexcharts-canvas .apexcharts-gridlines line { stroke: #333 !important; }
+html.theme-pixel .apexcharts-canvas .apexcharts-text { fill: #666 !important; }
+html.theme-pixel .apexcharts-canvas .apexcharts-legend-text { color: #888 !important; }
+
+/* ===== Right drawer ===== */
+html.theme-pixel .MuiDrawer-paperAnchorRight { background: #16162a !important; border-left: 4px solid #333 !important; border-radius: 0 !important; }
+html.theme-pixel .MuiBackdrop-root { background: rgba(0,0,0,0.7) !important; }
+
+/* ===== Scrollbar ===== */
+html.theme-pixel ::-webkit-scrollbar { width: 8px !important; height: 8px !important; }
+html.theme-pixel ::-webkit-scrollbar-track { background: #1a1a2e !important; border: 2px solid #333 !important; }
+html.theme-pixel ::-webkit-scrollbar-thumb { background: #4a9eff !important; border: 2px solid #fff !important; border-radius: 0 !important; }
+html.theme-pixel ::-webkit-scrollbar-thumb:hover { background: #ffd93d !important; }
+
+/* ===== Version badge ===== */
+html.theme-pixel .MuiChip-filledDefault { background: #1a1a2e !important; color: #444 !important; border: 3px solid #333 !important; border-radius: 0 !important; }
+
+/* ===== Empty state ===== */
+html.theme-pixel .MuiTypography-h4 { color: #444 !important; font-size: 0.6rem !important; }
+
+/* ===== Invite card ===== */
+html.theme-pixel .MuiStack-root .MuiCard-root { background: #16162a !important; border: 4px solid #ffd93d !important; border-radius: 0 !important; box-shadow: 6px 6px 0 rgba(255, 217, 61, 0.2) !important; }
+
+/* ===== Icon colors ===== */
+html.theme-pixel .iconify { color: #666 !important; }
+html.theme-pixel .MuiListItemButton-root:hover .iconify { color: #4a9eff !important; }
+
+/* ===== Toasts ===== */
+html.theme-pixel [data-sonner-toaster] { background: #16162a !important; border: 4px solid #333 !important; color: #fff !important; border-radius: 0 !important; }
+
+/* ===== Swipe area ===== */
+html.theme-pixel .PrivateSwipeArea-root { background: #16162a !important; }
+
+/* ===== Register / Reset Pages ===== */
+html.theme-pixel .MuiAppBar-root,html.theme-pixel .MuiDrawer-docked,html.theme-pixel .PrivateSwipeArea-root,html.theme-pixel .MuiToolbar-root{display:none!important}
+html.theme-pixel main{padding-top:0!important;margin-top:0!important}
+html.theme-pixel .relative.overflow-hidden,html.theme-pixel [class*="bg-gray-100"]{background:#1a1a2e!important;padding:0!important;min-height:100vh!important}
+html.theme-pixel .blur-ball,html.theme-pixel .flex.items-center.justify-center.mb-6,html.theme-pixel .flex.justify-center.pt-6,html.theme-pixel .mt-6.text-center,html.theme-pixel footer,html.theme-pixel [class*="footer"],html.theme-pixel [class*="copyright"]{display:none!important}
+html.theme-pixel .semi-card{background:#16162a!important;border:4px solid #333!important;border-radius:0!important;box-shadow:6px 6px 0 #1a1a2e!important;padding:2rem!important}
+html.theme-pixel .semi-input,html.theme-pixel input:not([type=hidden]):not([type=checkbox]){background:#1a1a2e!important;border:4px solid #333!important;border-radius:0!important;color:#fff!important;padding:0.875rem 1rem!important}
+html.theme-pixel .semi-input-wrapper-focus,html.theme-pixel input:focus{border-color:#4a9eff!important;box-shadow:4px 4px 0 rgba(74,158,255,0.2)!important}
+html.theme-pixel label,html.theme-pixel .semi-form-field-label{color:#666!important;font-size:0.6rem!important}
+html.theme-pixel .semi-button-primary{background:#4a9eff!important;border:4px solid #fff!important;border-radius:0!important;color:#fff!important;height:auto!important;padding:0.875rem 2rem!important;font-size:0.7rem!important;box-shadow:6px 6px 0 #1a1a2e!important;transition:all .2s!important}
+html.theme-pixel .semi-button-primary:hover{box-shadow:3px 3px 0 #1a1a2e!important;transform:translate(3px,3px)!important}
+html.theme-pixel .semi-button-outline{border:3px solid #333!important;color:#888!important;border-radius:0!important;background:transparent!important}
+html.theme-pixel .semi-button-outline:hover{border-color:#4a9eff!important;color:#4a9eff!important;transform:translate(-2px,-2px)!important;box-shadow:4px 4px 0 rgba(74,158,255,0.2)!important}
+html.theme-pixel .semi-divider{border-color:#333!important}
+html.theme-pixel .semi-divider-text{color:#444!important;background:#16162a!important}
+html.theme-pixel a{color:#4a9eff!important}
+html.theme-pixel .semi-checkbox-inner-checked{background:#4a9eff!important;border-color:#4a9eff!important;border-radius:0!important}
+html.theme-pixel .semi-modal-content{background:#16162a!important;border:4px solid #333!important;border-radius:0!important}
+html.theme-pixel .semi-modal-header{color:#fff!important;font-size:0.7rem!important}
+html.theme-pixel .semi-modal-body{color:#aaa!important;font-size:0.5rem!important}
+html.theme-pixel .bg-black{background:#4a9eff!important}
+html.theme-pixel .text-white{color:#fff!important}
+html.theme-pixel .\!rounded-full{border-radius:0!important}
+html.theme-pixel .border-gray-200{border-color:#333!important}
+html.theme-pixel .hover\:bg-gray-50:hover,html.theme-pixel .hover\:bg-gray-800:hover{background:rgba(74,158,255,0.08)!important}
+html.theme-pixel .h-12{height:auto!important;padding:0.875rem 2rem!important}

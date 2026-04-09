@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台管理 - PayPro</title>
+    <script src="/js/vue.global.min.js"></script>
+    <link href="/css/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css">
+    <style>
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-right: var(--glass-border);
+            color: var(--text-color);
+            padding: 24px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar:hover {
+            border-right-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .logo {
+            padding: 0 30px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 24px;
+        }
+        
+        .logo h1 {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+        
+        .menu {
+            list-style: none;
+        }
+        
+        .menu-item {
+            margin: 8px 16px;
+        }
+        
+        .menu-link {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 20px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-size: 15px;
+            font-weight: 500;
+        }
+        
+        .menu-link:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+        }
+        
+        .menu-link.active {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+            color: var(--text-color);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+        
+        .menu-link i {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 24px;
+        }
+        
+        .header {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: var(--glass-border);
+            border-radius: 20px;
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h2 {
+            font-size: 20px;
+            color: var(--text-color);
+            font-weight: 600;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .user-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        
+        .user-details {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .user-name {
+            color: var(--text-color);
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .user-role {
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+        
+        .logout-btn {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .content {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+        
+        .stat-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: var(--glass-border);
+            border-radius: 20px;
+            padding: 28px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            border-radius: 20px 0 0 20px;
+        }
+        
+        .stat-card.orders::before {
+            background: linear-gradient(to bottom, var(--primary-color), var(--primary-hover));
+        }
+        
+        .stat-card.paid::before {
+            background: linear-gradient(to bottom, #10b981, #059669);
+        }
+        
+        .stat-card.unpaid::before {
+            background: linear-gradient(to bottom, #f59e0b, #d97706);
+        }
+        
+        .stat-card h3 {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+        
+        .stat-card .value {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 8px;
+        }
+        
+        .stat-card .trend {
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .trend.positive {
+            color: #10b981;
+        }
+        
+        .trend.negative {
+            color: #ef4444;
+        }
+        
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: var(--glass-border);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .card-header {
+            padding: 24px 28px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-header h3 {
+            font-size: 16px;
+            color: var(--text-color);
+            font-weight: 600;
+        }
+        
+        .card-body {
+            padding: 28px;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th,
+        .table td {
+            padding: 14px 18px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .table th {
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .table td {
+            font-size: 14px;
+            color: var(--text-color);
+        }
+        
+        .table tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            backdrop-filter: blur(8px);
+        }
+        
+        .status-badge.pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+        
+        .status-badge.paid {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        
+        .status-badge.failed {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        }
+        
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+        
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn-ghost:hover {
+            color: var(--text-color);
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 24px;
+        }
+        
+        .pagination button {
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--glass-bg);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-muted);
+        }
+        
+        .pagination button:hover:not(:disabled) {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .pagination span {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        
+        .search-form {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            font-size: 14px;
+            outline: none;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+            backdrop-filter: blur(8px);
+        }
+        
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .search-input:focus {
+            border-color: var(--primary-color);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .filter-select {
+            padding: 12px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            font-size: 14px;
+            outline: none;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+            backdrop-filter: blur(8px);
+        }
+        
+        .filter-select option {
+            background: var(--surface-color);
+            color: var(--text-color);
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 1000;
+            }
+            
+            .main {
+                margin-left: 0;
+                padding: 16px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+            
+            .user-info {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="layout">
+            <aside class="sidebar">
+                <div class="logo">
+                    <h1><i class="ri-dashboard-line"></i> PayPro</h1>
+                    <p>后台管理系统</p>
+                </div>
+                
+                <ul class="menu">
+                    <li class="menu-item" v-for="menu in menus" :key="menu.id">
+                        <a :href="menu.path" class="menu-link" :class="{active: currentPage === menu.path.split('/').pop().split('.')[0]}">
+                            <i :class="menu.icon"></i>
+                            <span>{{ menu.name }}</span>
+                        </a>
+                    </li>
+                </ul>
+            </aside>
+            
+            <main class="main">
+                <header class="header">
+                    <h2>{{ pageTitle }}</h2>
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            {{ adminInfo.nickname ? adminInfo.nickname.charAt(0) : 'A' }}
+                        </div>
+                        <div class="user-details">
+                            <div class="user-name">{{ adminInfo.nickname || adminInfo.username || '管理员' }}</div>
+                            <div class="user-role">系统管理员</div>
+                        </div>
+                        <button class="logout-btn" @click="showChangePasswordModal = true">
+                            <i class="ri-key-line"></i> 修改密码
+                        </button>
+                        <button class="logout-btn" @click="handleLogout">
+                            <i class="ri-logout-box-line"></i> 退出
+                        </button>
+                    </div>
+                </header>
+                
+                <div class="content">
+                    <div v-if="currentPage === 'dashboard'">
+                        <div class="stats-grid">
+                            <div class="stat-card orders">
+                                <h3>总订单数</h3>
+                                <div class="value">{{ statistics.total || 0 }}</div>
+                                <div class="trend" :class="statistics.totalTrend > 0 ? 'positive' : 'negative'">
+                                    <i :class="statistics.totalTrend > 0 ? 'ri-arrow-up-line' : 'ri-arrow-down-line'"></i>
+                                    <span>较昨日 {{ statistics.totalTrend > 0 ? '+' : '' }}{{ statistics.totalTrend || 0 }}%</span>
+                                </div>
+                            </div>
+                            <div class="stat-card paid">
+                                <h3>已支付订单数</h3>
+                                <div class="value">{{ statistics.paid || 0 }}</div>
+                                <div class="trend" :class="statistics.paidTrend > 0 ? 'positive' : 'negative'">
+                                    <i :class="statistics.paidTrend > 0 ? 'ri-arrow-up-line' : 'ri-arrow-down-line'"></i>
+                                    <span>较昨日 {{ statistics.paidTrend > 0 ? '+' : '' }}{{ statistics.paidTrend || 0 }}%</span>
+                                </div>
+                            </div>
+                            <div class="stat-card unpaid">
+                                <h3>待支付</h3>
+                                <div class="value">{{ statistics.unpaid || 0 }}</div>
+                                <div class="trend" :class="statistics.unpaidTrend > 0 ? 'positive' : 'negative'">
+                                    <i :class="statistics.unpaidTrend > 0 ? 'ri-arrow-up-line' : 'ri-arrow-down-line'"></i>
+                                    <span>较昨日 {{ statistics.unpaidTrend > 0 ? '+' : '' }}{{ statistics.unpaidTrend || 0 }}%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>最近订单</h3>
+                                <a href="/admin/orders.html" class="btn btn-primary btn-sm">查看全部</a>
+                            </div>
+                            <div class="card-body">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>订单号</th>
+                                            <th>金额</th>
+                                            <th>支付方式</th>
+                                            <th>状态</th>
+                                            <th>创建时间</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="order in recentOrders" :key="order.id">
+                                            <td>{{ order.id }}</td>
+                                            <td>￥{{ order.money }}</td>
+                                            <td>{{ order.payType }}</td>
+                                            <td>
+                                                <span class="status-badge" :class="getStatusClass(order.state)">
+                                                    {{ getStatusText(order.state) }}
+                                                </span>
+                                            </td>
+                                            <td>{{ formatDate(order.createTime) }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+        <!-- 密码修改模态框 -->
+        <div class="modal" v-if="showChangePasswordModal" @click="closeChangePasswordModal">
+            <div class="modal-content" @click.stop>
+                <div class="modal-header">
+                    <h3>修改密码</h3>
+                    <button class="close-btn" @click="closeChangePasswordModal">
+                        <i class="ri-close-line"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form @submit.prevent="handleChangePassword">
+                        <div class="form-group">
+                            <label for="oldPassword">原密码</label>
+                            <input type="password" id="oldPassword" v-model="changePasswordForm.oldPassword" class="search-input" placeholder="请输入原密码" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newPassword">新密码</label>
+                            <input type="password" id="newPassword" v-model="changePasswordForm.newPassword" class="search-input" placeholder="请输入新密码" required>
+                            <div class="password-strength" v-if="changePasswordForm.newPassword">
+                                <div class="strength-bar" :class="getPasswordStrengthClass(changePasswordForm.newPassword)"></div>
+                                <div class="strength-text">{{ getPasswordStrengthText(changePasswordForm.newPassword) }}</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmPassword">确认密码</label>
+                            <input type="password" id="confirmPassword" v-model="changePasswordForm.confirmPassword" class="search-input" placeholder="请再次输入新密码" required>
+                            <div class="error-text" v-if="changePasswordForm.newPassword && changePasswordForm.confirmPassword && changePasswordForm.newPassword !== changePasswordForm.confirmPassword">
+                                两次输入的密码不一致
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-ghost" @click="closeChangePasswordModal">取消</button>
+                            <button type="submit" class="btn btn-primary" :disabled="changePasswordForm.newPassword && changePasswordForm.confirmPassword && changePasswordForm.newPassword !== changePasswordForm.confirmPassword">
+                                确认修改
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    currentPage: 'dashboard',
+                    pageTitle: '控制台',
+                    adminInfo: {},
+                    statistics: {},
+                    recentOrders: [],
+                    menus: [],
+                    showChangePasswordModal: false,
+                    changePasswordForm: {
+                        oldPassword: '',
+                        newPassword: '',
+                        confirmPassword: ''
+                    }
+                };
+            },
+            mounted() {
+                this.loadMenusFromStorage();
+                this.checkAuth();
+                this.loadAdminInfo();
+                this.loadMenus();
+                this.loadStatistics();
+                this.loadRecentOrders();
+            },
+            methods: {
+                loadMenusFromStorage() {
+                    const stored = localStorage.getItem('adminMenus');
+                    if (stored) {
+                        try {
+                            this.menus = JSON.parse(stored);
+                        } catch (e) {
+                            console.error('解析菜单缓存失败:', e);
+                        }
+                    }
+                },
+                async loadMenus() {
+                    try {
+                        const response = await fetch('/admin/api/menus/permission');
+                        const result = await response.json();
+                        if (result.code === 200) {
+                            this.menus = this.flattenMenuTree(result.data);
+                            localStorage.setItem('adminMenus', JSON.stringify(this.menus));
+                        }
+                    } catch (error) {
+                        console.error('获取菜单权限失败:', error);
+                        if (this.menus.length === 0) {
+                            this.menus = [
+                                { id: 1, name: '控制台', path: '/admin/index.html', icon: 'ri-home-line' },
+                                { id: 2, name: '订单管理', path: '/admin/orders.html', icon: 'ri-file-list-3-line' },
+                                { id: 3, name: '商品管理', path: '/admin/products.html', icon: 'ri-shopping-bag-line' },
+                                { id: 4, name: '角色管理', path: '/admin/role.html', icon: 'ri-shield-line' },
+                                { id: 5, name: '菜单管理', path: '/admin/menu.html', icon: 'ri-menu-line' },
+                                { id: 6, name: '系统配置', path: '/admin/settings.html', icon: 'ri-settings-3-line' }
+                            ];
+                        }
+                    }
+                },
+                flattenMenuTree(menuTree) {
+                    let menus = [];
+                    const traverse = (menu) => {
+                        if (menu.path) {
+                            menus.push(menu);
+                        }
+                        if (menu.children) {
+                            menu.children.forEach(child => traverse(child));
+                        }
+                    };
+                    menuTree.forEach(menu => traverse(menu));
+                    return menus;
+                },
+                async checkAuth() {
+                    try {
+                        const response = await fetch('/admin/api/info');
+                        const result = await response.json();
+                        if (result.code !== 200) {
+                            window.location.href = '/admin/login.html';
+                        }
+                    } catch (error) {
+                        window.location.href = '/admin/login.html';
+                    }
+                },
+                
+                async loadAdminInfo() {
+                    const stored = localStorage.getItem('adminInfo');
+                    if (stored) {
+                        this.adminInfo = JSON.parse(stored);
+                    }
+                    
+                    try {
+                        const response = await fetch('/admin/api/info');
+                        const result = await response.json();
+                        if (result.code === 200) {
+                            this.adminInfo = result.data;
+                            localStorage.setItem('adminInfo', JSON.stringify(result.data));
+                        }
+                    } catch (error) {
+                        console.error('获取管理员信息失败:', error);
+                    }
+                },
+                
+                async loadStatistics() {
+                    try {
+                        const response = await fetch('/admin/api/order/statistics');
+                        const result = await response.json();
+                        if (result.code === 200) {
+                            this.statistics = result.data;
+                        }
+                    } catch (error) {
+                        console.error('获取统计数据失败:', error);
+                    }
+                },
+                
+                async loadRecentOrders() {
+                    try {
+                        const response = await fetch('/admin/api/order/list?page=1&size=10');
+                        const result = await response.json();
+                        if (result.code === 200) {
+                            this.recentOrders = result.data.list;
+                        }
+                    } catch (error) {
+                        console.error('获取订单列表失败:', error);
+                    }
+                },
+                
+                async handleLogout() {
+                    try {
+                        await fetch('/admin/api/logout', { method: 'POST' });
+                        localStorage.removeItem('adminInfo');
+                        localStorage.removeItem('adminMenus');
+                        window.location.href = '/admin/login.html';
+                    } catch (error) {
+                        console.error('退出登录失败:', error);
+                    }
+                },
+                
+                getStatusClass(state) {
+                    const classMap = {
+                        0: 'pending',
+                        1: 'paid',
+                        2: 'failed',
+                        3: 'paid',
+                        4: 'pending'
+                    };
+                    return classMap[state] || 'pending';
+                },
+                
+                getStatusText(state) {
+                    const textMap = {
+                        0: '待支付',
+                        1: '已支付',
+                        2: '已失败',
+                        3: '已支付',
+                        4: '已扫码'
+                    };
+                    return textMap[state] || '未知';
+                },
+                
+                formatDate(dateStr) {
+                    if (!dateStr) return '-';
+                    const date = new Date(dateStr);
+                    return date.toLocaleString('zh-CN');
+                },
+                closeChangePasswordModal() {
+                    this.showChangePasswordModal = false;
+                    this.changePasswordForm = {
+                        oldPassword: '',
+                        newPassword: '',
+                        confirmPassword: ''
+                    };
+                },
+                async handleChangePassword() {
+                    if (this.changePasswordForm.newPassword !== this.changePasswordForm.confirmPassword) {
+                        alert('两次输入的密码不一致');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/admin/api/change-password', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                oldPassword: this.changePasswordForm.oldPassword,
+                                newPassword: this.changePasswordForm.newPassword
+                            })
+                        });
+                        const result = await response.json();
+                        if (result.code === 200) {
+                            alert('密码修改成功');
+                            this.closeChangePasswordModal();
+                        } else {
+                            alert(result.message);
+                        }
+                    } catch (error) {
+                        console.error('修改密码失败:', error);
+                        alert('修改密码失败，请稍后重试');
+                    }
+                },
+                getPasswordStrengthClass(password) {
+                    if (password.length < 6) return 'weak';
+                    if (password.length < 10) return 'medium';
+                    return 'strong';
+                },
+                getPasswordStrengthText(password) {
+                    if (password.length < 6) return '密码强度：弱';
+                    if (password.length < 10) return '密码强度：中';
+                    return '密码强度：强';
+                }
+            }
+        }).mount('#app');
+    </script>
+
+    <style>
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: var(--glass-border);
+            border-radius: 20px;
+            padding: 32px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .password-strength {
+            margin-top: 8px;
+        }
+
+        .strength-bar {
+            height: 4px;
+            border-radius: 2px;
+            margin-bottom: 4px;
+        }
+
+        .strength-bar.weak {
+            background: linear-gradient(to right, #ef4444, #f59e0b);
+            width: 33%;
+        }
+
+        .strength-bar.medium {
+            background: linear-gradient(to right, #f59e0b, #10b981);
+            width: 66%;
+        }
+
+        .strength-bar.strong {
+            background: linear-gradient(to right, #10b981, #3b82f6);
+            width: 100%;
+        }
+
+        .strength-text {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .error-text {
+            font-size: 12px;
+            color: #ef4444;
+            margin-top: 4px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 32px;
+        }
+    </style>
+</body>
+</html>

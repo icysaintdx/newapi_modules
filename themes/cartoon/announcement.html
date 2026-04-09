@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="design-page" content="true">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公告 - Saint Code</title>
+    <link rel="icon" type="image/x-icon" href="/themes/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/themes/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/themes/apple-touch-icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Fredoka', sans-serif; background: linear-gradient(135deg, #fff5f5 0%, #f0f9ff 50%, #f5f0ff 100%); color: #5a4a4a; min-height: 100vh; }
+        .header { background: rgba(255, 255, 255, 0.9); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: fixed; width: 100%; top: 0; z-index: 100; border-bottom: 3px solid #ffb6c1; box-shadow: 0 4px 15px rgba(255, 182, 193, 0.3); }
+        .logo { font-size: 1.5rem; font-weight: 700; color: #ff6b9d; text-shadow: 2px 2px 0 #ffd5e5; }
+        .nav a { color: #8a7a7a; text-decoration: none; margin-left: 1.5rem; font-weight: 500; padding: 0.5rem 1rem; border-radius: 20px; }
+        .container { max-width: 800px; margin: 0 auto; padding: 8rem 2rem 4rem; }
+        h1 { font-size: 2.5rem; margin-bottom: 2rem; color: #ff6b9d; text-shadow: 2px 2px 0 #ffd5e5; }
+        .notice-board { display: flex; flex-direction: column; gap: 1rem; }
+        .notice-item { background: #fff; padding: 1.5rem; border-radius: 20px; border: 3px solid #ffe4ec; transition: all 0.3s; }
+        .notice-item:hover { border-color: #ff9ec4; transform: scale(1.01); }
+        .notice-item.pinned { border-left: 5px solid #ff6b9d; background: #fff9fa; }
+        .notice-item h3 { font-size: 1.125rem; margin-bottom: 0.5rem; color: #ff6b9d; }
+        .notice-item p { color: #9a8a8a; line-height: 1.6; margin-bottom: 0.75rem; }
+        .notice-meta { display: flex; gap: 1rem; font-size: 0.75rem; color: #caa; }
+    </style>
+    <script src="/theme/theme-switcher.js"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">Saint Code ✨</div>
+        <nav class="nav">
+            <a href="/">🏠 首页</a>
+            <a href="/announcement">📢 公告</a>
+            <a href="/about">📖 关于</a>
+            <a href="/login">🔐 登录</a>
+        </nav>
+    </header>
+    <div class="container">
+        <h1>📢 公告</h1>
+        <div class="notice-board">
+            <div class="notice-item pinned">
+                <h3>🎉 平台上线通知</h3>
+                <p>Saint Code AI API 平台正式上线！欢迎大家使用～ ✨</p>
+                <div class="notice-meta"><span>2026-04-01</span><span>📌 置顶</span></div>
+            </div>
+            <div class="notice-item">
+                <h3>🌟 新增 Gemini 模型支持</h3>
+                <p>平台现已支持 Gemini 3.1 Pro，欢迎体验！</p>
+                <div class="notice-meta"><span>2026-04-02</span></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

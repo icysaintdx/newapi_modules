@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>渠道状态 - Saint Code</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0d0d0d;
+            color: #fff;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        .header h1 { font-size: 24px; font-weight: 700; }
+        .header a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .header a:hover { text-decoration: underline; }
+        .refresh-btn {
+            padding: 8px 16px;
+            background: #667eea;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .refresh-btn:hover { background: #5a6fd4; }
+        .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .stats-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .stat-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            min-width: 120px;
+            text-align: center;
+        }
+        .stat-card .number { font-size: 28px; font-weight: 700; }
+        .stat-card .label { font-size: 12px; color: #888; margin-top: 4px; }
+        .stat-card.online .number { color: #22c55e; }
+        .stat-card.offline .number { color: #ef4444; }
+        .stat-card.slow .number { color: #f59e0b; }
+        .stat-card.total .number { color: #667eea; }
+
+        .channel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+        .channel-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 1.25rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .channel-card:hover {
+            border-color: rgba(102, 126, 234, 0.5);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.1);
+        }
+        .channel-card.status-online { border-left: 4px solid #22c55e; }
+        .channel-card.status-offline { border-left: 4px solid #ef4444; }
+        .channel-card.status-slow { border-left: 4px solid #f59e0b; }
+
+        .channel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .channel-name { font-size: 16px; font-weight: 600; }
+        .channel-status {
+            padding: 4px 10px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .channel-status.online { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+        .channel-status.offline { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+        .channel-status.slow { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+        .channel-status.testing { background: rgba(102, 126, 234, 0.15); color: #667eea; }
+
+        .channel-models {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 0.5rem;
+        }
+        .model-tag {
+            padding: 2px 8px;
+            background: #222;
+            border: 1px solid #444;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #ccc;
+        }
+        .model-tag.online { border-color: rgba(34, 197, 94, 0.3); color: #22c55e; }
+        .model-tag.offline { border-color: rgba(239, 68, 68, 0.3); color: #ef4444; opacity: 0.5; }
+
+        .channel-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.75rem;
+            font-size: 13px;
+            color: #888;
+        }
+        .latency { font-weight: 600; }
+        .latency.good { color: #22c55e; }
+        .latency.medium { color: #f59e0b; }
+        .latency.bad { color: #ef4444; }
+
+        .loading { text-align: center; padding: 4rem; color: #888; }
+        .loading .spinner {
+            display: inline-block;
+            width: 40px; height: 40px;
+            border: 3px solid #333;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .error-msg {
+            text-align: center;
+            padding: 4rem;
+            color: #ef4444;
+        }
+        .error-msg a { color: #667eea; }
+
+        @media (max-width: 768px) {
+            body { padding: 1rem; }
+            .channel-grid { grid-template-columns: 1fr; }
+            .stats-bar { gap: 0.5rem; }
+            .stat-card { min-width: 80px; padding: 0.75rem 1rem; }
+            .stat-card .number { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>📡 渠道状态监控</h1>
+            <p style="color:#888;font-size:14px;margin-top:4px;">实时检测各渠道模型可用性</p>
+        </div>
+        <div style="display:flex;gap:12px;align-items:center;">
+            <button class="refresh-btn" id="refresh-btn" onclick="checkAll()">🔄 刷新检测</button>
+            <a href="/console">← 返回控制台</a>
+        </div>
+    </div>
+
+    <div class="stats-bar" id="stats-bar" style="display:none;">
+        <div class="stat-card total"><div class="number" id="stat-total">0</div><div class="label">总渠道</div></div>
+        <div class="stat-card online"><div class="number" id="stat-online">0</div><div class="label">正常</div></div>
+        <div class="stat-card slow"><div class="number" id="stat-slow">0</div><div class="label">延迟高</div></div>
+        <div class="stat-card offline"><div class="number" id="stat-offline">0</div><div class="label">不可用</div></div>
+    </div>
+
+    <div id="content">
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>正在加载渠道信息...</p>
+        </div>
+    </div>
+
+    <script src="/theme/theme-switcher.js"></script>
+    <script>
+    var channels = [];
+    var results = {};
+
+    // Fetch channels from API
+    async function loadChannels() {
+        try {
+            var res = await fetch('/api/channel/?p=0&size=1000', {
+                credentials: 'same-origin'
+            });
+            var data = await res.json();
+            if (!data.success) {
+                document.getElementById('content').innerHTML = '<div class="error-msg"><p>无法获取渠道信息</p><p style="margin-top:8px;font-size:14px;">请确保已登录且有管理员权限</p><p style="margin-top:16px;"><a href="/login">去登录</a></p></div>';
+                return;
+            }
+            channels = data.data || [];
+            if (channels.length === 0) {
+                document.getElementById('content').innerHTML = '<div class="loading"><p>暂无渠道数据</p></div>';
+                return;
+            }
+            checkAll();
+        } catch(e) {
+            document.getElementById('content').innerHTML = '<div class="error-msg"><p>网络错误: ' + e.message + '</p></div>';
+        }
+    }
+
+    // Check a single channel
+    async function checkChannel(ch) {
+        var id = ch.id;
+        results[id] = { status: 'testing', latency: null, models: [], error: null };
+        renderChannel(id);
+
+        // Get channel models
+        var models = [];
+        if (ch.models) {
+            models = ch.models.split(',').map(function(m) { return m.trim(); }).filter(Boolean);
+        }
+
+        // Test with first available model
+        if (models.length === 0) {
+            results[id] = { status: 'offline', latency: null, models: [], error: '无可用模型' };
+            renderChannel(id);
+            return;
+        }
+
+        var testModel = models[0];
+        var startTime = Date.now();
+
+        try {
+            var controller = new AbortController();
+            var timeout = setTimeout(function() { controller.abort(); }, 10000);
+
+            var res = await fetch('/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + ch.key
+                },
+                body: JSON.stringify({
+                    model: testModel,
+                    messages: [{ role: 'user', content: 'hi' }],
+                    max_tokens: 5
+                }),
+                signal: controller.signal
+            });
+            clearTimeout(timeout);
+
+            var latency = Date.now() - startTime;
+
+            if (res.ok) {
+                results[id] = { status: latency > 3000 ? 'slow' : 'online', latency: latency, models: models, error: null };
+            } else {
+                var errData = await res.json().catch(function() { return {}; });
+                results[id] = { status: 'offline', latency: latency, models: models, error: errData.error ? errData.error.message : 'HTTP ' + res.status };
+            }
+        } catch(e) {
+            var latency = Date.now() - startTime;
+            results[id] = { status: 'offline', latency: latency >= 10000 ? null : latency, models: models, error: e.name === 'AbortError' ? '超时' : e.message };
+        }
+
+        renderChannel(id);
+        updateStats();
+    }
+
+    // Check all channels
+    async function checkAll() {
+        var btn = document.getElementById('refresh-btn');
+        btn.disabled = true;
+        btn.textContent = '⏳ 检测中...';
+
+        document.getElementById('stats-bar').style.display = 'flex';
+
+        // Render all cards first
+        var grid = document.createElement('div');
+        grid.className = 'channel-grid';
+        grid.id = 'channel-grid';
+        var content = document.getElementById('content');
+        content.innerHTML = '';
+        content.appendChild(grid);
+
+        channels.forEach(function(ch) {
+            var card = document.createElement('div');
+            card.className = 'channel-card';
+            card.id = 'ch-' + ch.id;
+            card.innerHTML = '<div style="padding:1rem;text-align:center;color:#888;">⏳ 等待检测...</div>';
+            grid.appendChild(card);
+        });
+
+        // Check channels with concurrency limit
+        var concurrency = 5;
+        var queue = channels.slice();
+        var running = 0;
+
+        function next() {
+            if (queue.length === 0 && running === 0) {
+                btn.disabled = false;
+                btn.textContent = '🔄 刷新检测';
+                return;
+            }
+            while (running < concurrency && queue.length > 0) {
+                var ch = queue.shift();
+                running++;
+                checkChannel(ch).then(function() {
+                    running--;
+                    next();
+                });
+            }
+        }
+        next();
+    }
+
+    // Render single channel card
+    function renderChannel(id) {
+        var ch = channels.find(function(c) { return c.id === id; });
+        if (!ch) return;
+        var r = results[id];
+        if (!r) return;
+
+        var card = document.getElementById('ch-' + id);
+        if (!card) return;
+
+        var statusText = { online: '正常', offline: '不可用', slow: '延迟高', testing: '检测中' };
+        var statusClass = r.status;
+        var latencyClass = r.latency === null ? 'bad' : (r.latency < 1000 ? 'good' : (r.latency < 3000 ? 'medium' : 'bad'));
+        var latencyText = r.latency === null ? '--' : r.latency + 'ms';
+
+        var modelsHtml = '';
+        if (r.models && r.models.length > 0) {
+            var showModels = r.models.slice(0, 8);
+            modelsHtml = '<div class="channel-models">' + showModels.map(function(m) {
+                var cls = r.status === 'online' ? 'online' : (r.status === 'offline' ? 'offline' : '');
+                return '<span class="model-tag ' + cls + '">' + m + '</span>';
+            }).join('') + (r.models.length > 8 ? '<span class="model-tag">+' + (r.models.length - 8) + '</span>' : '') + '</div>';
+        }
+
+        var errorHtml = r.error ? '<div style="margin-top:0.5rem;font-size:12px;color:#ef4444;">⚠️ ' + r.error + '</div>' : '';
+
+        card.className = 'channel-card status-' + statusClass;
+        card.innerHTML =
+            '<div class="channel-header">' +
+                '<span class="channel-name">' + (ch.name || '渠道 #' + ch.id) + '</span>' +
+                '<span class="channel-status ' + statusClass + '">' + statusText[statusClass] + '</span>' +
+            '</div>' +
+            '<div class="channel-info">' +
+                '<span>类型: ' + (ch.type || '--') + '</span>' +
+                '<span class="latency ' + latencyClass + '">延迟: ' + latencyText + '</span>' +
+            '</div>' +
+            errorHtml +
+            modelsHtml;
+    }
+
+    // Update stats
+    function updateStats() {
+        var total = channels.length;
+        var online = 0, slow = 0, offline = 0;
+        Object.keys(results).forEach(function(id) {
+            var r = results[id];
+            if (r.status === 'online') online++;
+            else if (r.status === 'slow') slow++;
+            else if (r.status === 'offline') offline++;
+        });
+        document.getElementById('stat-total').textContent = total;
+        document.getElementById('stat-online').textContent = online;
+        document.getElementById('stat-slow').textContent = slow;
+        document.getElementById('stat-offline').textContent = offline;
+    }
+
+    // Init
+    loadChannels();
+    </script>
+</body>
+</html>

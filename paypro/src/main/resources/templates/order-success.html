@@ -1,0 +1,72 @@
+<!doctype html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>操作成功</title>
+    <meta name="description" content="个人收款支付系统 无需签约 无需第三方SDK 完全免费">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+            .main{
+                margin-top: 40px;
+            }
+        </style>
+</head>
+
+<body>
+<div class="main">
+    <table align="center" border="0" cellspacing="0" cellpadding="0">
+        <tr>
+            <td height="20"></td>
+        </tr>
+        <!-- content -->
+        <tr>
+            <td style="font-size:13px; color:#7f8c8d; line-height:26px;" align="center">
+                <img src="https://i.loli.net/2018/07/18/5b4f12fb00713.png" width="50">
+            </td>
+        </tr>
+        <tr>
+            <td style="font-size:13px; color:#7f8c8d; line-height:26px;" align="center">
+                恭喜您，支付成功！
+            </td>
+        </tr>
+        <tr>
+            <td style="font-size:13px; color:#7f8c8d; line-height:26px;" align="center">
+                支付金额：<span th:text="${money}"></span>，
+                支付方式：<span th:text="${payType}"></span>，
+                留言：<span th:text="${description}"></span>，
+                支付时间：<span th:text="${time}"></span>
+            </td>
+        </tr>
+        <tr>
+            <td style="font-size:13px; color:#7f8c8d; line-height:26px;" align="center">
+                十分感谢您的充值，您还可以到官网查看到您的充值数据.
+            </td>
+        </tr>
+
+        <!-- 提取码显示区域 -->
+        <tr th:if="${downloadUrl != null and downloadUrl.length() == 6}">
+            <td height="20"></td>
+        </tr>
+        <tr th:if="${downloadUrl != null and downloadUrl.length() == 6}">
+            <td align="center">
+                <div style="background-color:#f8f9fa; border:2px solid #28a745; border-radius:8px; padding:20px; margin:10px auto; max-width:400px;">
+                    <div style="font-size:14px; color:#333; margin-bottom:10px; font-weight:bold;">您的提取码</div>
+                    <div style="font-size:32px; color:#28a745; font-weight:bold; letter-spacing:8px; font-family:monospace;" th:text="${downloadUrl}"></div>
+                    <div style="font-size:12px; color:#666; margin-top:10px;">请妥善保管，24小时内有效，仅可使用一次</div>
+                    <div style="font-size:12px; color:#666; margin-top:5px;">
+                        <a th:href="@{/extract}" style="color:#007bff; text-decoration:none;">点击这里提取兑换码</a>
+                    </div>
+                </div>
+            </td>
+        </tr>
+
+        <!-- 下载地址显示区域（非提取码类型） -->
+        <tr th:if="${downloadUrl != null and downloadUrl.length() != 6}">
+            <td style="font-size:13px; color:#7f8c8d; line-height:26px;" align="center">
+                下载地址：<span th:text="${downloadUrl}"></span>
+            </td>
+        </tr>
+    </table>
+</div>
+</body>
+</html>

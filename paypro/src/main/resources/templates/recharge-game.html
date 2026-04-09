@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>游戏充值中心</title>
+    <script src="/js/vue.global.min.js"></script>
+    <link href="/css/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css">
+    <script src="/assets/js/api-config.js"></script>
+    <script src="/assets/js/http-util.js"></script>
+    <style>
+        .page-wrap {
+            padding-top: 60px;
+            padding-bottom: 60px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 32px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            padding: 32px;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title i {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .products {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .product {
+            padding: 20px 16px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all .3s ease;
+            background: rgba(255,255,255,0.03);
+        }
+
+        .product:hover {
+            border-color: var(--primary-color);
+            background: rgba(99,102,241,.1);
+            transform: translateY(-2px);
+        }
+
+        .product.active {
+            border-color: var(--primary-color);
+            background: rgba(99,102,241,.15);
+            box-shadow: 0 4px 12px rgba(99,102,241,0.2);
+        }
+
+        .product-description {
+            padding: 16px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 20px;
+            transition: all .3s ease;
+        }
+
+        .product-description:hover {
+            border-color: rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .product-description .label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .product-description .content {
+            color: var(--text-color);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .custom {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            margin-bottom: 32px;
+        }
+
+        .custom input {
+            flex: 1;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.03);
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: all .3s ease;
+        }
+
+        .custom input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+        }
+
+        .payment-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 20px;
+            margin-bottom: 32px;
+        }
+
+        .payment-item {
+            padding: 24px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+            transition: all .3s ease;
+            background: rgba(255,255,255,0.03);
+            position: relative;
+        }
+
+        .payment-item:hover:not(.disabled) {
+            border-color: var(--primary-color);
+            background: rgba(99,102,241,.1);
+            transform: translateY(-2px);
+        }
+
+        .payment-item.active {
+            border-color: var(--primary-color);
+            background: rgba(99,102,241,.15);
+            box-shadow: 0 4px 12px rgba(99,102,241,0.2);
+        }
+
+        .payment-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .payment-item.disabled:hover {
+            border-color: rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.02);
+            transform: none;
+        }
+
+        .payment-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .payment-icon {
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+        }
+
+        .payment-info {
+            flex: 1;
+        }
+
+        .payment-name {
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+
+        .payment-description {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .field {
+            display: grid;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .field input {
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.03);
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: all .3s ease;
+        }
+
+        .field input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+        }
+
+        .summary {
+            display: grid;
+            gap: 16px;
+            margin-bottom: 32px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .summary-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: all .3s ease;
+        }
+
+        .summary-item:hover {
+            border-color: rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .summary-item .label {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .summary-item .value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+
+        .actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 32px;
+        }
+
+        .msg {
+            margin-top: 20px;
+            text-align: center;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        .msg.error {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .msg.success {
+            color: #22c55e;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 40px 20px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            border: 1px dashed rgba(255,255,255,0.1);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(4px);
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 900px) {
+            .content {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .products {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .payment-list {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .actions .btn {
+                width: 100%;
+                max-width: 200px;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-wrap {
+                padding-top: 40px;
+                padding-bottom: 40px;
+            }
+
+            .title {
+                font-size: 2rem;
+            }
+
+            .card {
+                padding: 24px;
+            }
+
+            .products {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div v-if="loading" class="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="container page-wrap">
+        <div class="header">
+            <h1 class="title">
+                <i class="ri-gamepad-line"></i> 游戏充值中心
+            </h1>
+            <p class="subtitle">选择游戏商品和支付方式，快速完成充值</p>
+        </div>
+
+        <div class="content">
+            <div class="glass card">
+                <div class="section-title">
+                    <i class="ri-shopping-bag-3-line"></i> 商品选择
+                </div>
+                <div v-if="productList.length > 0" class="products">
+                    <div class="product"
+                         v-for="product in productList"
+                         :key="product.id"
+                         :class="{active: selectedProductId === product.id && !customAmount}"
+                         @click="selectProduct(product)"
+                         :title="product.description">
+                        <div style="font-size: 1.25rem; font-weight: 600; color: var(--text-color);">￥{{ formatMoney(product.money) }}</div>
+                        <div style="font-size: 12px; margin-top: 8px; color: var(--text-muted);">
+                            {{ product.productName }}
+                        </div>
+                    </div>
+                </div>
+                <div v-else class="empty-state">
+                    <i class="ri-shopping-cart-line"></i>
+                    <div>暂无游戏商品配置</div>
+                </div>
+            </div>
+
+            <div class="glass card">
+                <div class="section-title">
+                    <i class="ri-credit-card-line"></i> 支付方式
+                </div>
+
+                <div v-if="selectedProduct" class="product-description">
+                    <div class="label">
+                        <i class="ri-information-line"></i> 商品详情
+                    </div>
+                    <div class="content">
+                        <div style="font-weight: 600; margin-bottom: 8px;">{{ selectedProduct.productName }}</div>
+                        <div>{{ selectedProduct.description || '暂无商品描述' }}</div>
+                    </div>
+                </div>
+
+                <div class="payment-list">
+                    <div class="payment-item"
+                         v-for="method in paymentMethods"
+                         :key="method.id"
+                         :class="{active: selectedPayment === method.id, disabled: !method.status}"
+                         @click="method.status ? selectPayment(method.id, method.useLocalQrCode) : null">
+                        <div class="payment-header">
+                            <div class="payment-icon">{{ method.icon }}</div>
+                            <div class="payment-info">
+                                <div class="payment-name">{{ method.name }}</div>
+                                <div class="payment-description">{{ method.description }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="summary">
+                    <div class="summary-item">
+                        <div class="label">充值金额</div>
+                        <div class="value">￥{{ finalAmount }}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="label">支付方式</div>
+                        <div class="value">{{ payTypeName }}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="label">游戏账号</div>
+                        <div class="value">{{ userId || '-' }}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="label">订单状态</div>
+                        <div class="value" style="color: var(--primary-color);">准备中</div>
+                    </div>
+                </div>
+
+                <div class="msg" style="margin-top: 24px; color: var(--text-muted);">
+                    <i class="ri-info-line"></i> 提交后将跳转到支付页面完成支付
+                </div>
+
+                <div class="actions">
+                    <a class="btn btn-primary"
+                       @click="submitRecharge"
+                       :class="{disabled: !canSubmit}"
+                       :style="{ opacity: canSubmit ? 1 : 0.6 }">
+                        <i class="ri-arrow-right-line"></i> 立即充值
+                    </a>
+                    <a href="history.html" class="btn btn-ghost">
+                        <i class="ri-history-line"></i> 充值记录
+                    </a>
+                </div>
+
+                <div class="msg" v-if="message">
+                    <span :class="messageType">{{ message }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer"><p>&copy; 2026 ISaintPay System. Designed for Creators.</p></div>
+    </div>
+</div>
+
+<script>
+    const { createApp } = Vue;
+
+    const app = createApp({
+        data() {
+            return {
+                selectedProductId: null,
+                customAmount: '',
+                userId: '',
+                description: '',
+                email: '',
+                selectedPayment: 'alipay',
+                useLocalQrCode: false,
+                loading: false,
+                message: '',
+                messageType: 'error',
+                productList: [],
+                paymentMethods: [
+                    {
+                        id: 'alipay',
+                        name: '支付宝转账',
+                        description: '免输备注，手动收款',
+                        icon: '🔵',
+                        status: true,
+                        useLocalQrCode: false
+                    },
+                    {
+                        id: 'wechat',
+                        name: '微信支付',
+                        description: '需备注，自动确认收款',
+                        icon: '🟢',
+                        status: true,
+                        useLocalQrCode: true
+                    },
+                    {
+                        id: 'wechat_zs',
+                        name: '微信赞赏码支付',
+                        description: '需备注，自动确认收款',
+                        icon: '🟢',
+                        status: true,
+                        useLocalQrCode: true
+                    },
+                    {
+                        id: 'alipay_dmf',
+                        name: '支付宝当面付',
+                        description: '支付宝官方产品，无需营业执照，免备注自动收款',
+                        icon: '🔵',
+                        status: true,
+                        useLocalQrCode: false
+                    }
+                ]
+            }
+        },
+        computed: {
+            finalAmount() {
+                if (this.customAmount) {
+                    return this.customAmount;
+                }
+                const selectedProduct = this.productList.find(p => p.id === this.selectedProductId);
+                return selectedProduct ? selectedProduct.money : 0;
+            },
+            selectedProduct() {
+                return this.productList.find(p => p.id === this.selectedProductId);
+            },
+            canSubmit() {
+                return this.finalAmount > 0 && this.selectedPayment && this.userId !== "" ;
+            },
+            payTypeName() {
+                const m = this.paymentMethods.find(x => x.id === this.selectedPayment);
+                return m ? m.name : '-';
+            }
+        },
+        methods: {
+            formatMoney(amount) {
+                return (amount || 0).toFixed(2);
+            },
+
+            clearMessages() {
+                this.message = '';
+            },
+
+            showError(message) {
+                this.message = message;
+                this.messageType = 'error';
+                setTimeout(() => {
+                    this.message = '';
+                }, 5000);
+            },
+
+            showSuccess(message) {
+                this.message = message;
+                this.messageType = 'success';
+                setTimeout(() => {
+                    this.message = '';
+                }, 3000);
+            },
+
+            selectProduct(product) {
+                this.selectedProductId = product.id;
+                this.customAmount = '';
+                this.clearMessages();
+            },
+
+            useCustom() {
+                if (this.customAmount) {
+                    this.selectedProductId = null;
+                }
+            },
+
+            selectPayment(method, useLocalQrCode) {
+                this.selectedPayment = method;
+                this.useLocalQrCode = useLocalQrCode;
+                this.clearMessages();
+            },
+
+            async loadGameProducts() {
+                try {
+                    console.log('开始加载游戏商品...');
+                    const req = { types: ['GAME'] };
+                    const resp = await postRequest(API_CONFIG.ENDPOINTS.PRODUCT_LIST, req);
+
+                    console.log('游戏商品响应:', resp);
+
+                    if (resp.code === 200 && resp.data && resp.data.length > 0) {
+                        this.productList = resp.data;
+                        console.log('游戏商品加载成功:', this.productList.length, '个商品');
+                    } else {
+                        console.warn('游戏商品列表为空或响应格式不正确');
+                        this.productList = [];
+                    }
+                } catch (error) {
+                    console.error('加载游戏商品失败:', error);
+                    this.showError('加载商品列表失败，请刷新页面重试');
+                    this.productList = [];
+                }
+            },
+
+            async submitRecharge() {
+                if (!this.canSubmit) {
+                    this.showError('请选择充值金额和支付方式，并填写游戏账号');
+                    return;
+                }
+
+                this.loading = true;
+                this.clearMessages();
+
+                try {
+                    const rechargeData = {
+                        money: this.finalAmount,
+                        productId: this.selectedProductId,
+                        payType: this.selectedPayment,
+                        description: this.userId,
+                        nickName: this.description || "",
+                        custom: Boolean(this.customAmount),
+                        email: this.email
+                    };
+
+                    console.log('发起游戏充值请求:', rechargeData);
+
+                    let response;
+                    if (this.selectedPayment !== 'alipay_dmf') {
+                        response = await postRequest(API_CONFIG.ENDPOINTS.RECHARGE, rechargeData);
+                    } else {
+                        response = await postRequest(API_CONFIG.ENDPOINTS.ALI_DFM, rechargeData);
+                    }
+
+                    console.log('充值响应:', response);
+
+                    if (response.code == 200) {
+                        this.showSuccess(`充值请求提交成功！订单号：${response.data.id}`);
+                        const that = this;
+                        setTimeout(() => {
+                            const paymentUrl = `payment.html?orderId=${response.data.id}&money=${response.data.money}&payType=${response.data.payType}&payNum=${response.data.payNum}&customerQr=${response.data.custom}&picName=${encodeURIComponent((response.data.money || 0).toFixed(2))}&qrCode=${response.data.qrCode}&payQrNum=${response.data.payQrNum}&useLocalQrCode=${that.useLocalQrCode}`;
+                            window.location.href = paymentUrl;
+                        }, 800);
+                    } else {
+                        this.showError(response.message || '充值请求失败，请稍后重试');
+                    }
+                } catch (error) {
+                    console.error('充值请求失败:', error);
+
+                    if (error.message.includes('超时')) {
+                        this.showError('网络超时，请检查网络连接后重试');
+                    } else if (error.message.includes('HTTP Error')) {
+                        this.showError('服务器错误，请稍后重试');
+                    } else {
+                        this.showError('充值请求失败，请稍后重试');
+                    }
+                } finally {
+                    this.loading = false;
+                }
+            }
+        },
+
+        mounted() {
+            console.log('游戏充值页面已加载');
+
+            if (typeof API_CONFIG === 'undefined') {
+                console.error('API_CONFIG未定义，请检查api-config.js文件是否正确加载');
+                this.showError('API配置加载失败，请刷新页面重试');
+                return;
+            }
+
+            const params = new URLSearchParams(window.location.search);
+            this.userId = params.get('userId') || '';
+
+            this.loadGameProducts();
+        }
+    });
+
+    app.mount('#app');
+</script>
+</body>
+</html>

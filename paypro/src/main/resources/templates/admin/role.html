@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>角色管理 - PayPro</title>
+    <script src="/js/vue.global.min.js"></script>
+    <link href="/css/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css">
+    <style>
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-right: var(--glass-border);
+            color: var(--text-color);
+            padding: 24px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar:hover {
+            border-right-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .logo {
+            padding: 0 30px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 24px;
+        }
+        
+        .logo h1 {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+        
+        .menu {
+            list-style: none;
+        }
+        
+        .menu-item {
+            margin: 8px 16px;
+        }
+        
+        .menu-link {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 20px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-size: 15px;
+            font-weight: 500;
+        }
+        
+        .menu-link:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+        }
+        
+        .menu-link.active {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+            color: var(--text-color);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+        
+        .menu-link i {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 24px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        
+        .header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .user-details {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .user-name {
+            font-weight: 500;
+            color: var(--text-color);
+        }
+        
+        .user-role {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        
+        .logout-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+        }
+        
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: var(--glass-border);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .card-header {
+            padding: 24px 28px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-header h3 {
+            font-size: 16px;
+            color: var(--text-color);
+            font-weight: 600;
+        }
+        
+        .card-body {
+            padding: 28px;
+        }
+        
+        .search-form {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .search-input {
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-color);
+            font-size: 14px;
+            min-width: 200px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .filter-select {
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-color);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .btn-ghost {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+        }
+        
+        .btn-ghost:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th,
+        .table td {
+            padding: 14px 18px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .table th {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .table td {
+            color: var(--text-color);
+        }
+        
+        .table tbody tr {
+            transition: all 0.3s ease;
+        }
+        
+        .table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-badge.active {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+        
+        .status-badge.inactive {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+        
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .action-btn.edit {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+        
+        .action-btn.permission {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+        
+        .action-btn.delete {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+        
+        .action-btn:hover {
+            opacity: 0.8;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 24px;
+        }
+        
+        .pagination button {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .pagination button:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-color);
+        }
+        
+        .pagination button.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: var(--glass-border);
+            border-radius: 20px;
+            padding: 32px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-content.wide {
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-color);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+        
+        .permission-tree {
+            margin: 20px 0;
+        }
+        
+        .permission-node {
+            margin: 8px 0;
+        }
+        
+        .permission-node label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            color: var(--text-color);
+        }
+        
+        .permission-children {
+            margin-left: 24px;
+            margin-top: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 1000;
+            }
+            
+            .main {
+                margin-left: 0;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+            
+            .user-info {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .search-form {
+                flex-direction: column;
+            }
+            
+            .search-input {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="logo">
+                <h1><i class="ri-dashboard-line"></i> PayPro</h1>
+                <p>后台管理系统</p>
+            </div>
+            
+            <ul class="menu">
+                <li class="menu-item" v-for="menu in menus" :key="menu.id">
+                    <a :href="menu.path" class="menu-link" :class="{active: menu.path.includes('role.html')}">
+                        <i :class="menu.icon"></i>
+                        <span>{{ menu.name }}</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+        
+        <main class="main">
+            <header class="header">
+                <h2>角色管理</h2>
+                <div class="user-info">
+                    <div class="user-avatar">
+                        {{ adminInfo.nickname ? adminInfo.nickname.charAt(0) : 'A' }}
+                    </div>
+                    <div class="user-details">
+                        <div class="user-name">{{ adminInfo.nickname || adminInfo.username || '管理员' }}</div>
+                        <div class="user-role">系统管理员</div>
+                    </div>
+                    <button class="logout-btn" @click="handleLogout">
+                        <i class="ri-logout-box-line"></i> 退出
+                    </button>
+                </div>
+            </header>
+            
+            <div class="content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>角色列表</h3>
+                        <button class="btn btn-success" @click="showAddModal">
+                            <i class="ri-add-line"></i> 创建角色
+                        </button>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="search-form" style="margin-bottom: 20px;">
+                            <input type="text" class="search-input" v-model="searchForm.keyword" placeholder="搜索角色名称或编码" @keyup.enter="loadRoles">
+                            <button class="btn btn-primary" @click="loadRoles">
+                                <i class="ri-search-line"></i> 搜索
+                            </button>
+                        </div>
+                        
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>角色名称</th>
+                                    <th>角色编码</th>
+                                    <th>描述</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="role in roles" :key="role.id">
+                                    <td>{{ role.name }}</td>
+                                    <td>{{ role.code }}</td>
+                                    <td>{{ role.description || '-' }}</td>
+                                    <td>
+                                        <span class="status-badge" :class="role.status === 1 ? 'active' : 'inactive'">
+                                            {{ role.status === 1 ? '启用' : '禁用' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="action-btns">
+                                            <button class="action-btn edit" @click="showEditModal(role)">
+                                                <i class="ri-edit-line"></i> 编辑
+                                            </button>
+                                            <button class="action-btn permission" @click="showPermissionModal(role.id)">
+                                                <i class="ri-key-2-line"></i> 权限
+                                            </button>
+                                            <button v-if="role.isSystem !== 1" class="action-btn delete" @click="deleteRole(role)">
+                                                <i class="ri-delete-bin-line"></i> 删除
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <div class="pagination" v-if="totalPages > 1">
+                            <button :disabled="page === 1" @click="page--; loadRoles()">上一页</button>
+                            <button v-for="p in totalPages" :key="p" :class="{active: page === p}" @click="page = p; loadRoles()">{{ p }}</button>
+                            <button :disabled="page === totalPages" @click="page++; loadRoles()">下一页</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- 创建/编辑角色模态框 -->
+    <div class="modal" v-if="showModal" @click="showModal = false">
+        <div class="modal-content" @click.stop>
+            <div class="modal-header">
+                <h3>{{ isEdit ? '编辑角色' : '创建角色' }}</h3>
+                <button class="close-btn" @click="showModal = false">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+            <form @submit.prevent="submitRole">
+                <div class="form-group">
+                    <label>角色名称</label>
+                    <input type="text" v-model="roleForm.name" required>
+                </div>
+                <div class="form-group">
+                    <label>角色编码</label>
+                    <input type="text" v-model="roleForm.code" required>
+                </div>
+                <div class="form-group">
+                    <label>描述</label>
+                    <textarea v-model="roleForm.description" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>状态</label>
+                    <select v-model="roleForm.status">
+                        <option :value="1">启用</option>
+                        <option :value="0">禁用</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-ghost" @click="showModal = false">取消</button>
+                    <button type="submit" class="btn btn-primary">{{ isEdit ? '保存' : '创建' }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 权限分配模态框 -->
+    <div class="modal" v-if="showPermModal" @click="showPermModal = false">
+        <div class="modal-content wide" @click.stop>
+            <div class="modal-header">
+                <h3>分配权限</h3>
+                <button class="close-btn" @click="showPermModal = false">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+            <div class="permission-tree">
+                <div v-for="menu in menuTree" :key="menu.id" class="permission-node">
+                    <label>
+                        <input type="checkbox" :value="menu.id" v-model="selectedMenuIds" @change="handleParentChange(menu)">
+                        {{ menu.name }}
+                    </label>
+                    <div v-if="menu.children && menu.children.length > 0" class="permission-children">
+                        <div v-for="child in menu.children" :key="child.id" class="permission-node">
+                            <label>
+                                <input type="checkbox" :value="child.id" v-model="selectedMenuIds">
+                                {{ child.name }}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-ghost" @click="showPermModal = false">取消</button>
+                <button type="button" class="btn btn-primary" @click="savePermissions">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const { createApp } = Vue;
+
+createApp({
+    data() {
+        return {
+            adminInfo: {},
+            menus: [],
+            roles: [],
+            page: 1,
+            size: 10,
+            total: 0,
+            totalPages: 1,
+            searchForm: {
+                keyword: ''
+            },
+            showModal: false,
+            isEdit: false,
+            roleForm: {
+                id: null,
+                name: '',
+                code: '',
+                description: '',
+                status: 1
+            },
+            showPermModal: false,
+            currentRoleId: null,
+            menuTree: [],
+            selectedMenuIds: []
+        };
+    },
+    mounted() {
+        this.loadMenusFromStorage();
+        this.checkAuth();
+        this.loadAdminInfo();
+        this.loadRoles();
+    },
+    methods: {
+        loadMenusFromStorage() {
+            const stored = localStorage.getItem('adminMenus');
+            if (stored) {
+                try {
+                    this.menus = JSON.parse(stored);
+                } catch (e) {
+                    console.error('解析菜单缓存失败:', e);
+                }
+            }
+            if (this.menus.length === 0) {
+                this.menus = [
+                    { id: 1, name: '控制台', path: '/admin/index.html', icon: 'ri-home-line' },
+                    { id: 2, name: '订单管理', path: '/admin/orders.html', icon: 'ri-file-list-3-line' },
+                    { id: 3, name: '商品管理', path: '/admin/products.html', icon: 'ri-shopping-bag-line' },
+                    { id: 4, name: '角色管理', path: '/admin/role.html', icon: 'ri-shield-line' },
+                    { id: 5, name: '菜单管理', path: '/admin/menu.html', icon: 'ri-menu-line' }
+                ];
+            }
+        },
+        async checkAuth() {
+            try {
+                const response = await fetch('/admin/api/info');
+                const result = await response.json();
+                if (result.code !== 200) {
+                    window.location.href = '/admin/login.html';
+                }
+            } catch (error) {
+                window.location.href = '/admin/login.html';
+            }
+        },
+        async loadAdminInfo() {
+            const stored = localStorage.getItem('adminInfo');
+            if (stored) {
+                this.adminInfo = JSON.parse(stored);
+            }
+            try {
+                const response = await fetch('/admin/api/info');
+                const result = await response.json();
+                if (result.code === 200) {
+                    this.adminInfo = result.data;
+                    localStorage.setItem('adminInfo', JSON.stringify(result.data));
+                }
+            } catch (error) {
+                console.error('获取管理员信息失败:', error);
+            }
+        },
+        async loadRoles() {
+            try {
+                let url = `/admin/api/roles?page=${this.page}&size=${this.size}`;
+                if (this.searchForm.keyword) {
+                    url += `&keyword=${this.searchForm.keyword}`;
+                }
+                const response = await fetch(url);
+                const result = await response.json();
+                if (result.code === 200) {
+                    this.roles = result.data.records;
+                    this.total = result.data.total;
+                    this.totalPages = Math.ceil(result.data.total / this.size);
+                }
+            } catch (error) {
+                console.error('加载角色列表失败:', error);
+            }
+        },
+        showAddModal() {
+            this.isEdit = false;
+            this.roleForm = {
+                id: null,
+                name: '',
+                code: '',
+                description: '',
+                status: 1
+            };
+            this.showModal = true;
+        },
+        showEditModal(role) {
+            this.isEdit = true;
+            this.roleForm = {
+                id: role.id,
+                name: role.name,
+                code: role.code,
+                description: role.description || '',
+                status: role.status
+            };
+            this.showModal = true;
+        },
+        async submitRole() {
+            try {
+                const url = this.isEdit ? `/admin/api/roles/${this.roleForm.id}` : '/admin/api/roles';
+                const method = this.isEdit ? 'PUT' : 'POST';
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(this.roleForm)
+                });
+                const result = await response.json();
+                if (result.code === 200) {
+                    this.showModal = false;
+                    this.loadRoles();
+                } else {
+                    alert(result.message || '保存失败');
+                }
+            } catch (error) {
+                console.error('保存角色失败:', error);
+                alert('保存角色失败');
+            }
+        },
+        async deleteRole(role) {
+            if (!confirm(`确定要删除角色"${role.name}"吗？`)) {
+                return;
+            }
+            try {
+                const response = await fetch(`/admin/api/roles/${role.id}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+                if (result.code === 200) {
+                    this.loadRoles();
+                } else {
+                    alert(result.message || '删除失败');
+                }
+            } catch (error) {
+                console.error('删除角色失败:', error);
+                alert('删除角色失败');
+            }
+        },
+        async showPermissionModal(roleId) {
+            this.currentRoleId = roleId;
+            try {
+                const [treeRes, permRes] = await Promise.all([
+                    fetch('/admin/api/menus/tree'),
+                    fetch(`/admin/api/roles/${roleId}/menus`)
+                ]);
+                const treeResult = await treeRes.json();
+                const permResult = await permRes.json();
+                if (treeResult.code === 200) {
+                    this.menuTree = treeResult.data;
+                }
+                if (permResult.code === 200) {
+                    this.selectedMenuIds = permResult.data || [];
+                }
+                this.showPermModal = true;
+            } catch (error) {
+                console.error('加载权限数据失败:', error);
+                alert('加载权限数据失败');
+            }
+        },
+        handleParentChange(menu) {
+            if (menu.children && menu.children.length > 0) {
+                const isChecked = this.selectedMenuIds.includes(menu.id);
+                menu.children.forEach(child => {
+                    const idx = this.selectedMenuIds.indexOf(child.id);
+                    if (isChecked && idx === -1) {
+                        this.selectedMenuIds.push(child.id);
+                    } else if (!isChecked && idx !== -1) {
+                        this.selectedMenuIds.splice(idx, 1);
+                    }
+                });
+            }
+        },
+        async savePermissions() {
+            try {
+                const response = await fetch(`/admin/api/roles/${this.currentRoleId}/menus`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(this.selectedMenuIds)
+                });
+                const result = await response.json();
+                if (result.code === 200) {
+                    this.showPermModal = false;
+                    alert('权限保存成功');
+                } else {
+                    alert(result.message || '保存失败');
+                }
+            } catch (error) {
+                console.error('保存权限失败:', error);
+                alert('保存权限失败');
+            }
+        },
+        async handleLogout() {
+            try {
+                await fetch('/admin/api/logout', { method: 'POST' });
+                localStorage.removeItem('adminInfo');
+                localStorage.removeItem('adminMenus');
+                window.location.href = '/admin/login.html';
+            } catch (error) {
+                console.error('退出登录失败:', error);
+            }
+        }
+    }
+}).mount('#app');
+</script>
+</body>
+</html>

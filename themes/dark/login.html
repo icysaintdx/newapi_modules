@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="design-page" content="true">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - Saint Code</title>
+    <link rel="icon" type="image/x-icon" href="/themes/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/themes/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/themes/apple-touch-icon.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1a2e 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            transition: background 1s ease;
+        }
+
+        body.light-on {
+            background: linear-gradient(135deg, #1a1520 0%, #2d2438 100%);
+        }
+
+        body.light-on::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: radial-gradient(circle at 25% 30%, rgba(255, 200, 100, 0.15), transparent 50%);
+            pointer-events: none;
+        }
+
+        .top-bar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            z-index: 100;
+            background: rgba(10, 14, 39, 0.8);
+            backdrop-filter: blur(10px);
+        }
+        .top-bar .home-link {
+            text-decoration: none;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: opacity 0.3s;
+        }
+        .top-bar .home-link:hover { opacity: 0.7; }
+
+        .page-wrapper {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 100px;
+            position: relative;
+            z-index: 10;
+            padding: 0 2rem;
+        }
+
+        /* ========== 台灯 ========== */
+        .lamp-wrapper {
+            position: relative;
+            width: 280px;
+            height: 380px;
+            flex-shrink: 0;
+        }
+
+        /* 底座 */
+        .lamp-base {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 30px;
+            background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.7);
+        }
+
+        /* 支柱（降低高度） */
+        .lamp-pole {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 100px;
+            background: linear-gradient(90deg, #3a3a3a 0%, #4a4a4a 50%, #3a3a3a 100%);
+            border-radius: 6px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        /* 灯罩支架 */
+        .lamp-arm {
+            position: absolute;
+            bottom: 130px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 40px;
+            background: linear-gradient(90deg, #3a3a3a 0%, #4a4a4a 50%, #3a3a3a 100%);
+            border-radius: 6px;
+        }
+
+        /* 灯泡（从灯罩底部露出，头朝下，最底层） */
+        .lamp-bulb {
+            position: absolute;
+            bottom: 150px;
+            left: 50%;
+            transform: translateX(-50%) rotate(180deg);
+            width: 40px;
+            height: 50px;
+            background: linear-gradient(180deg, #ddd 0%, #bbb 100%);
+            border-radius: 50% 50% 48% 48%;
+            box-shadow: inset 0 -5px 10px rgba(0,0,0,0.2);
+            transition: all 0.8s ease;
+            z-index: 1;
+        }
+
+        .lamp-bulb::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 8px;
+            background: #999;
+            border-radius: 2px;
+        }
+
+        .lamp-bulb.on {
+            background: linear-gradient(180deg, #fffacd 0%, #fff8dc 100%);
+            box-shadow:
+                0 0 40px rgba(255,215,0,0.9),
+                0 0 80px rgba(255,215,0,0.6),
+                inset 0 -5px 10px rgba(255,215,0,0.3);
+        }
+
+        /* 灯绳（从灯罩底部垂下，第二层） */
+        .lamp-rope {
+            position: absolute;
+            bottom: 100px;
+            left: calc(50% + 50px);
+            width: 2px;
+            background: linear-gradient(180deg, #666 0%, #888 50%, #666 100%);
+            cursor: grab;
+            transform-origin: top center;
+            z-index: 2;
+            transition: none;
+        }
+
+        .lamp-rope:active { cursor: grabbing; }
+
+        /* 灯绳拉珠 */
+        .lamp-rope::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 10px;
+            background: radial-gradient(circle, #999 0%, #666 100%);
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+        }
+
+        /* 皮筋回弹动画 */
+        @keyframes rubberBounce {
+            0% { transform: scaleY(1.6) translateY(0); }
+            20% { transform: scaleY(0.8) translateY(-10px); }
+            40% { transform: scaleY(1.1) translateY(0); }
+            60% { transform: scaleY(0.95) translateY(-3px); }
+            80% { transform: scaleY(1.02) translateY(0); }
+            100% { transform: scaleY(1) translateY(0); }
+        }
+
+        .lamp-rope.bounce {
+            animation: rubberBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        /* 灯罩（梯形，深色金属质感，第三层，遮住灯泡和灯绳上半部分） */
+        .lamp-shade {
+            position: absolute;
+            bottom: 170px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 140px;
+            background: linear-gradient(180deg, #4a4a4a 0%, #3a3a3a 50%, #2a2a2a 100%);
+            clip-path: polygon(25% 0%, 75% 0%, 100% 100%, 0% 100%);
+            box-shadow:
+                0 5px 25px rgba(0,0,0,0.5),
+                inset 0 2px 5px rgba(255,255,255,0.1),
+                inset 0 -2px 5px rgba(0,0,0,0.3);
+            transition: all 0.8s ease;
+            overflow: visible;
+            z-index: 3;
+        }
+
+        .lamp-shade.on {
+            background: linear-gradient(180deg, #5a5a4a 0%, #4a4a3a 50%, #3a3a2a 100%);
+            box-shadow:
+                0 0 60px rgba(255,215,0,0.6),
+                0 5px 25px rgba(0,0,0,0.5),
+                inset 0 2px 5px rgba(255,255,255,0.2),
+                inset 0 -2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* 灯罩内部光晕（从底部透出） */
+        .lamp-shade::before {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 10%;
+            width: 80%;
+            height: 60px;
+            background: radial-gradient(ellipse at top, rgba(255,250,200,0) 0%, transparent 100%);
+            transition: all 0.8s ease;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* 笑脸（在灯罩外表面中部，最上层） */
+        .lamp-face {
+            position: absolute;
+            bottom: 200px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 130px;
+            height: 90px;
+            z-index: 4;
+            pointer-events: none;
+        }
+
+        /* 眼睛 - 闭眼 */
+        .lamp-eye {
+            position: absolute;
+            width: 22px;
+            height: 3px;
+            background: #333;
+            border-radius: 2px;
+            top: 20px;
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .lamp-eye.left { left: 28px; }
+        .lamp-eye.right { right: 28px; }
+
+        /* 睁眼 - 更大更圆润 */
+        .lamp-face.on .lamp-eye {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            top: 18px;
+        }
+
+        /* 眼睛高光 */
+        .lamp-face.on .lamp-eye::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            top: 5px;
+            right: 6px;
+        }
+
+        /* 嘴巴 - 闭嘴（往下移） */
+        .lamp-mouth {
+            position: absolute;
+            width: 35px;
+            height: 3px;
+            background: #333;
+            border-radius: 2px;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        /* 张嘴笑 - 更自然的弧形（往下移） */
+        .lamp-face.on .lamp-mouth {
+            width: 55px;
+            height: 28px;
+            border-radius: 0 0 28px 28px;
+            bottom: 12px;
+        }
+
+        /* ========== 登录表单 ========== */
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 0;
+            opacity: 0;
+            transform: translateX(50px);
+            visibility: hidden;
+            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .login-container.show {
+            opacity: 1;
+            transform: translateX(0);
+            visibility: visible;
+        }
+
+        .logo {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .logo a {
+            text-decoration: none;
+            font-size: inherit;
+            font-weight: inherit;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: opacity 0.3s;
+        }
+        .logo a:hover { opacity: 0.7; }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 2rem;
+        }
+
+        .login-box {
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 2.5rem;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            transition: all 0.8s ease;
+        }
+
+        .login-box.show {
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.4),
+                0 0 60px rgba(255, 215, 0, 0.2);
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #aaa;
+            font-size: 0.875rem;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: rgba(13, 13, 13, 0.8);
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
+        }
+        .links {
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+        .links a {
+            color: #666;
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+        .links a:hover { color: #667eea; }
+
+        @media (max-width: 768px) {
+            .page-wrapper {
+                flex-direction: column;
+                gap: 40px;
+            }
+            .lamp-wrapper {
+                transform: scale(0.75);
+            }
+        }
+    </style>
+    <script src="/theme/theme-switcher.js"></script>
+</head>
+<body>
+    <div class="top-bar">
+        <a href="/" class="home-link">Saint Code</a>
+    </div>
+
+    <div class="page-wrapper">
+        <!-- 台灯 -->
+        <div class="lamp-wrapper">
+            <div class="lamp-base"></div>
+            <div class="lamp-pole"></div>
+            <div class="lamp-arm"></div>
+            <div class="lamp-shade" id="lampShade"></div>
+            <div class="lamp-bulb" id="lampBulb"></div>
+            <div class="lamp-face" id="lampFace">
+                <div class="lamp-eye left"></div>
+                <div class="lamp-eye right"></div>
+                <div class="lamp-mouth"></div>
+            </div>
+            <div class="lamp-rope" id="lampRope"></div>
+        </div>
+
+        <!-- 登录表单 -->
+        <div class="login-container" id="loginContainer">
+            <div class="logo"><a href="/">Saint Code</a></div>
+            <p class="subtitle">登录到 AI API 平台</p>
+            <div class="login-box" id="loginBox">
+                <form id="login-form">
+                    <div class="form-group">
+                        <label>用户名</label>
+                        <input type="text" id="username" placeholder="请输入用户名" required>
+                    </div>
+                    <div class="form-group">
+                        <label>密码</label>
+                        <input type="password" id="password" placeholder="请输入密码" required>
+                    </div>
+                    <div id="error-msg" style="color:#ff6b6b;font-size:0.875rem;margin-bottom:1rem;display:none;"></div>
+                    <button type="submit" class="btn" id="login-btn">登录</button>
+                </form>
+                <div class="links">
+                    <a href="/register">注册账号</a> · <a href="/reset">忘记密码?</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const rope = document.getElementById('lampRope');
+        const shade = document.getElementById('lampShade');
+        const bulb = document.getElementById('lampBulb');
+        const face = document.getElementById('lampFace');
+        const loginContainer = document.getElementById('loginContainer');
+        const loginBox = document.getElementById('loginBox');
+        const body = document.body;
+        let isLightOn = false;
+        let isDragging = false;
+        let startY = 0;
+        let initialHeight = 70;
+
+        function toggleLight() {
+            isLightOn = !isLightOn;
+            if (isLightOn) {
+                shade.classList.add('on');
+                bulb.classList.add('on');
+                face.classList.add('on');
+                body.classList.add('light-on');
+                setTimeout(() => {
+                    loginContainer.classList.add('show');
+                    loginBox.classList.add('show');
+                }, 400);
+            } else {
+                shade.classList.remove('on');
+                bulb.classList.remove('on');
+                face.classList.remove('on');
+                body.classList.remove('light-on');
+                loginContainer.classList.remove('show');
+                loginBox.classList.remove('show');
+            }
+        }
+
+        // 初始化绳子高度
+        rope.style.height = initialHeight + 'px';
+
+        rope.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            isDragging = true;
+            startY = e.clientY;
+            rope.style.transition = 'none';
+        });
+
+        rope.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            isDragging = true;
+            startY = e.touches[0].clientY;
+            rope.style.transition = 'none';
+        }, { passive: false });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+
+            // 计算拖动距离（向下为正）
+            const deltaY = e.clientY - startY;
+            // 新高度 = 初始高度 + 拖动距离
+            const newHeight = Math.max(50, Math.min(150, initialHeight + deltaY));
+            rope.style.height = newHeight + 'px';
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+
+            const deltaY = e.touches[0].clientY - startY;
+            const newHeight = Math.max(50, Math.min(150, initialHeight + deltaY));
+            rope.style.height = newHeight + 'px';
+        }, { passive: false });
+
+        document.addEventListener('mouseup', (e) => {
+            if (!isDragging) return;
+
+            const deltaY = e.clientY - startY;
+            isDragging = false;
+
+            // 如果拉动超过 30px，触发开关灯
+            if (Math.abs(deltaY) > 30) {
+                toggleLight();
+            }
+
+            // 回弹动画
+            rope.style.transition = '';
+            rope.classList.add('bounce');
+            setTimeout(() => {
+                rope.classList.remove('bounce');
+                rope.style.height = initialHeight + 'px';
+            }, 600);
+        });
+
+        document.addEventListener('touchend', (e) => {
+            if (!isDragging) return;
+
+            const touch = e.changedTouches[0];
+            const deltaY = touch.clientY - startY;
+            isDragging = false;
+
+            if (Math.abs(deltaY) > 30) {
+                toggleLight();
+            }
+
+            rope.style.transition = '';
+            rope.classList.add('bounce');
+            setTimeout(() => {
+                rope.classList.remove('bounce');
+                rope.style.height = initialHeight + 'px';
+            }, 600);
+        });
+    </script>
+    <script src="/theme/auth.js"></script>
+</body>
+</html>

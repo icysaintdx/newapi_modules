@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISaintPay - ISaint充值服务</title>
+    <!-- 引入Vue 3 -->
+    <script src="/js/vue.global.min.js"></script>
+    <!-- 引入 Remix Icons -->
+    <link href="/css/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css">
+    <!-- 内联配置加载器 -->
+    <script>
+    (function(){let c=null;async function load(){if(c)return c;try{const r=await fetch('/api/config/public');const d=await r.json();if(d.code===200)c=d.data;}catch(e){console.error('配置加载失败:',e);}return c||{};}async function apply(){const cfg=await load();if(!cfg||!Object.keys(cfg).length)return;if(cfg.siteName||cfg.common_logo)replace('PayPro',cfg.siteName||cfg.common_logo);if(cfg.siteTitle)replace('个人收款支付系统',cfg.siteTitle);if(cfg.common_footer){document.querySelectorAll('footer,.footer,[class*="footer"]').forEach(el=>{if(el.textContent.includes('©')||el.textContent.includes('PayPro'))el.textContent=cfg.common_footer;});}}function replace(old,neu){if(!neu||old===neu)return;const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode:n=>(n.parentElement.tagName==='SCRIPT'||n.parentElement.tagName==='STYLE')?NodeFilter.FILTER_REJECT:(n.textContent.includes(old)?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_SKIP)});const ns=[];let n;while(n=w.nextNode())ns.push(n);ns.forEach(n=>n.textContent=n.textContent.replace(new RegExp(old,'g'),neu));}window.SiteConfig={load,apply,get:k=>c?c[k]:null};if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',apply);}else{apply();}})();
+    </script>
+    <style>
+        /* Header & Nav */
+        .top-nav {
+            display: flex;
+            justify-content: flex-end;
+            padding: 24px 0;
+        }
+
+        .btn-ghost {
+            color: var(--text-color);
+            padding: 10px 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-ghost:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        .hero {
+            text-align: center;
+            padding: 60px 0 80px;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            color: #A78BFA;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            letter-spacing: 0.5px;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        .hero .subtitle {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 40px;
+            line-height: 1.8;
+        }
+
+        /* Features Grid */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 80px;
+        }
+
+        .feature-card {
+            padding: 32px;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            background: var(--glass-hover-bg);
+            border-color: rgba(255,255,255,0.15);
+        }
+
+        .feature-icon-wrapper {
+            width: 56px;
+            height: 56px;
+            background: rgba(245, 158, 11, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            color: var(--primary-color);
+            font-size: 1.75rem;
+        }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: white;
+        }
+
+        .feature-desc {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Stats/Advantages Row */
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 30px;
+            padding: 40px;
+            margin-bottom: 80px;
+            text-align: center;
+        }
+
+        .stat-item h3 {
+            font-size: 2rem;
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        .stat-item p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            text-align: center;
+            padding: 80px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Abstract decoration behind CTA */
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .cta-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .cta-desc {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .payment-logos {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 40px;
+            opacity: 0.7;
+        }
+        
+        .payment-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .payment-logo i {
+            font-size: 2rem;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .cta-title { font-size: 2rem; }
+            .stats-row { flex-direction: column; gap: 40px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <!-- Nav -->
+            <div class="top-nav">
+                <a href="help.html" class="btn-ghost">
+                    <i class="ri-question-line"></i>
+                    帮助中心
+                </a>
+            </div>
+
+            <!-- Hero -->
+            <div class="hero">
+                <div class="hero-badge">无需签约 · 即刻收款 </div>
+                <h1>ISaint充值服务<br>安全便捷 即时到账</h1>
+                <p class="subtitle">
+                    专为ISaint用户打造的充值服务平台。<br>
+                    支持支付宝、微信支付，充值后自动发放兑换码。<br>
+                    安全可靠的ISaint充值服务，支持多种支付方式。
+                </p>
+                <a href="recharge.html" class="btn btn-primary">
+                    立即充值 <i class="ri-arrow-right-line"></i>
+                </a>
+            </div>
+
+            <!-- Stats -->
+            <div class="glass stats-row">
+                <div class="stat-item">
+                    <h3>5分钟</h3>
+                    <p>快速部署</p>
+                </div>
+                <div class="stat-item">
+                    <h3>0%</h3>
+                    <p>平台费率</p>
+                </div>
+                <div class="stat-item">
+                    <h3>100%</h3>
+                    <p>资金安全</p>
+                </div>
+            </div>
+            
+            <!-- Features -->
+            <div class="features">
+                <div class="glass feature-card">
+                    <div class="feature-icon-wrapper">
+                        <i class="ri-shield-check-line"></i>
+                    </div>
+                    <div class="feature-title">无需签约</div>
+                    <div class="feature-desc">
+                        告别繁琐的企业资质审核。无需第三方支付签约流程，零门槛接入，个人也能拥有专业收款能力。
+                    </div>
+                </div>
+                
+                <div class="glass feature-card">
+                    <div class="feature-icon-wrapper">
+                        <i class="ri-robot-2-line"></i>
+                    </div>
+                    <div class="feature-title">支持自动回调</div>
+                    <div class="feature-desc">
+                        自动回调， 实时更新订单状态，无需人工干预.
+                    </div>
+                </div>
+
+                <div class="glass feature-card">
+                    <div class="feature-icon-wrapper">
+                        <i class="ri-toggle-line"></i>
+                    </div>
+                    <div class="feature-title">双模式切换</div>
+                    <div class="feature-desc">
+                        支持全自动/半自动模式灵活切换。既能享受自动化的便捷，又能满足高精度对账需求。
+                    </div>
+                </div>
+
+                <div class="glass feature-card">
+                    <div class="feature-icon-wrapper">
+                        <i class="ri-smartphone-line"></i>
+                    </div>
+                    <div class="feature-title">全平台支持</div>
+                    <div class="feature-desc">
+                        完美支持支付宝、微信支付。无论是扫码支付还是转账模式，都能轻松应对。
+                    </div>
+                </div>
+                
+                <div class="glass feature-card">
+                    <div class="feature-icon-wrapper">
+                        <i class="ri-lock-2-line"></i>
+                    </div>
+                    <div class="feature-title">私有化部署</div>
+                    <div class="feature-desc">
+                        数据完全掌握在自己手中。不依赖第三方SaaS平台，安全可控。
+                    </div>
+                </div>
+                
+                <div class="glass feature-card">
+                    <div class="feature-icon-wrapper">
+                        <i class="ri-pie-chart-line"></i>
+                    </div>
+                    <div class="feature-title">数据可视化</div>
+                    <div class="feature-desc">
+                        内置强大的数据统计仪表盘。实时掌握流水情况，让每一笔收入都清晰可见。
+                    </div>
+                </div>
+
+            </div>
+            
+            <!-- CTA -->
+            <div class="glass cta-section">
+                <h2 class="cta-title">准备好开始了吗？</h2>
+                <p class="cta-desc">
+                    加入众多开发者的选择，体验最纯粹的支付解决方案。
+                </p>
+                
+                <a href="recharge.html" class="btn btn-primary">
+                    <i class="ri-shopping-bag-line"></i>
+                    选择商品
+                </a>
+
+                <div class="payment-logos">
+                    <div class="payment-logo">
+                        <i class="ri-alipay-fill"></i>
+                        <span>Alipay</span>
+                    </div>
+                    <div class="payment-logo">
+                        <i class="ri-wechat-pay-fill"></i>
+                        <span>WeChat</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer">
+                <p>&copy; 2026 ISaintPay System. Designed for Creators.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        const app = createApp({
+            data() {
+                return {
+                    // Future state management
+                }
+            },
+            mounted() {
+                
+            }
+        });
+
+        app.mount('#app');
+    </script>
+</body>
+</html>

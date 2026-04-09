@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="design-page" content="true">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saint Code - AI API Platform</title>
+    <link rel="icon" type="image/x-icon" href="/themes/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/themes/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/themes/apple-touch-icon.png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; image-rendering: pixelated; }
+        
+        /* 像素风格蓝色格子背景 - 类似超级玛丽天空 */
+        body { 
+            font-family: 'Press Start 2P', cursive; 
+            background: #4a7fd8;
+            background-image: 
+                /* 主格子纹路 - 加强对比度 */
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 19px,
+                    rgba(0, 0, 0, 0.4) 19px,
+                    rgba(0, 0, 0, 0.4) 20px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 19px,
+                    rgba(0, 0, 0, 0.4) 19px,
+                    rgba(0, 0, 0, 0.4) 20px
+                ),
+                /* 高光格子 */
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 19px,
+                    rgba(255, 255, 255, 0.2) 19px,
+                    rgba(255, 255, 255, 0.2) 21px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 19px,
+                    rgba(255, 255, 255, 0.2) 19px,
+                    rgba(255, 255, 255, 0.2) 21px
+                ),
+                linear-gradient(180deg, #4a7fd8 0%, #3d6ab8 100%);
+            background-size: 20px 20px, 20px 20px, 20px 20px, 20px 20px, 100% 100%;
+            color: #fff; 
+            min-height: 100vh;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+        
+        /* 像素云朵装饰 */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 20%;
+            left: 10%;
+            width: 120px;
+            height: 60px;
+            background: #fff;
+            box-shadow: 
+                40px 0 0 #fff,
+                80px 0 0 #fff,
+                20px 20px 0 #fff,
+                60px 20px 0 #fff,
+                100px 20px 0 #fff,
+                0 40px 0 #fff,
+                40px 40px 0 #fff,
+                80px 40px 0 #fff,
+                120px 40px 0 #fff;
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .header { 
+            background: #3d7dd8; 
+            padding: 1.5rem 2rem; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            position: fixed; 
+            width: 100%; 
+            top: 0; 
+            z-index: 100; 
+            border-bottom: 4px solid #2a5ba8;
+            box-shadow: 0 4px 0 #000;
+        }
+        
+        .logo { 
+            font-size: 1.5rem; 
+            color: #fff; 
+            text-shadow: 4px 4px 0 #000; 
+            letter-spacing: 2px; 
+        }
+        
+        .nav a { 
+            color: #ffd93d; 
+            text-decoration: none; 
+            margin-left: 2rem; 
+            font-size: 0.75rem; 
+            transition: all 0.1s;
+            text-shadow: 2px 2px 0 #000;
+        }
+        
+        .nav a:hover { 
+            color: #fff; 
+            transform: translateY(-2px);
+        }
+        
+        .hero { 
+            padding: 8rem 2rem 4rem; 
+            text-align: center; 
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* 马里奥渐进式加载动画 */
+        .mario-loader {
+            position: absolute;
+            top: 5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 180px;
+            height: 180px;
+            z-index: 0;
+        }
+        
+        .mario-loader img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            image-rendering: pixelated;
+            opacity: 0;
+            animation: fadeInOut 18s infinite;
+        }
+        
+        .mario-loader img:nth-child(1) { animation-delay: 0s; }
+        .mario-loader img:nth-child(2) { animation-delay: 3s; }
+        .mario-loader img:nth-child(3) { animation-delay: 6s; }
+        .mario-loader img:nth-child(4) { animation-delay: 9s; }
+        .mario-loader img:nth-child(5) { animation-delay: 12s; }
+        .mario-loader img:nth-child(6) { animation-delay: 15s; }
+        
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; transform: scale(0.9); }
+            11.11% { opacity: 1; transform: scale(1); }
+            27.78% { opacity: 1; transform: scale(1); }
+            38.89% { opacity: 0; transform: scale(0.9); }
+        }
+        
+        /* 像素砖块装饰 - 移到侧边 */
+        .hero::before { 
+            content: ''; 
+            position: absolute; 
+            top: 5rem; 
+            right: 10%; 
+            width: 60px;
+            height: 60px;
+            background: #d87c28;
+            border: 4px solid #000;
+            box-shadow: 
+                inset 4px 4px 0 #f0a040,
+                inset -4px -4px 0 #a05820;
+            animation: bounce 2s ease-in-out infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .hero h1 { 
+            font-size: 2.2rem; 
+            margin-bottom: 2rem; 
+            line-height: 1.6; 
+            color: #fff; 
+            text-shadow: 5px 5px 0 #000;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .hero h1 span { 
+            color: #ffd93d; 
+            text-shadow: 5px 5px 0 #d87c28;
+        }
+        
+        .hero p { 
+            font-size: 0.8rem; 
+            color: #fff; 
+            max-width: 600px; 
+            margin: 0 auto 2rem; 
+            line-height: 2;
+            text-shadow: 3px 3px 0 #000;
+        }
+        
+        /* 像素按钮 - 超级玛丽金币风格 */
+        .btn { 
+            display: inline-block; 
+            padding: 1.2rem 2.5rem; 
+            background: #ffd93d; 
+            color: #000; 
+            text-decoration: none; 
+            font-size: 0.85rem; 
+            border: 4px solid #000; 
+            box-shadow: 
+                inset -4px -4px 0 #d8a820,
+                inset 4px 4px 0 #fff8a0,
+                8px 8px 0 #000;
+            transition: all 0.1s;
+            font-weight: bold;
+        }
+        
+        .btn:hover { 
+            transform: translate(4px, 4px); 
+            box-shadow: 
+                inset -4px -4px 0 #d8a820,
+                inset 4px 4px 0 #fff8a0,
+                4px 4px 0 #000;
+        }
+        
+        .features { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+            gap: 2rem; 
+            padding: 4rem 2rem; 
+            max-width: 1000px; 
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* 像素砖块卡片 */
+        .feature-card { 
+            background: #d87c28; 
+            padding: 1.5rem; 
+            border: 4px solid #000;
+            box-shadow: 
+                inset 4px 4px 0 #f0a040,
+                inset -4px -4px 0 #a05820,
+                8px 8px 0 #000;
+            transition: all 0.1s;
+        }
+        
+        .feature-card:hover { 
+            transform: translate(-4px, -4px); 
+            box-shadow: 
+                inset 4px 4px 0 #f0a040,
+                inset -4px -4px 0 #a05820,
+                12px 12px 0 #000;
+        }
+        
+        .feature-card h3 { 
+            font-size: 0.85rem; 
+            margin-bottom: 1rem; 
+            color: #fff; 
+            text-shadow: 3px 3px 0 #000;
+        }
+        
+        .feature-card p { 
+            font-size: 0.65rem; 
+            color: #fff; 
+            line-height: 2;
+            text-shadow: 2px 2px 0 #000;
+        }
+        
+        .footer { 
+            background: #3d7dd8; 
+            padding: 2rem; 
+            text-align: center; 
+            border-top: 4px solid #000;
+            box-shadow: 0 -4px 0 #2a5ba8;
+        }
+        
+        .footer p { 
+            font-size: 0.65rem; 
+            color: #ffd93d;
+            text-shadow: 2px 2px 0 #000;
+        }
+    </style>
+    <script src="/theme/theme-switcher.js"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">SAINT CODE</div>
+        <nav class="nav">
+            <a href="/">首页</a>
+            <a href="#features">功能</a>
+            <a href="/about">关于</a>
+            <a href="https://isaint.cc/status/" target="_blank">状态</a>
+            <a href="/login">登录</a>
+        </nav>
+    </header>
+    <section class="hero">
+        <!-- 马里奥渐进式加载动画 -->
+        <div class="mario-loader">
+            <img src="/theme/pixel/1.webp" alt="Mario">
+            <img src="/theme/pixel/2.webp" alt="Mario">
+            <img src="/theme/pixel/3.webp" alt="Mario">
+            <img src="/theme/pixel/4.webp" alt="Mario">
+            <img src="/theme/pixel/5.webp" alt="Mario">
+            <img src="/theme/pixel/6.webp" alt="Mario">
+        </div>
+        <h1>您的专属<br><span>AI API</span> 中转服务</h1>
+        <p>◆ 聚合 40+ AI 服务商 ◆<br>统一接口 ◆ 按需付费 ◆</p>
+        <a href="/login" class="btn">立即使用</a>
+    </section>
+    <section class="features" id="features">
+        <div class="feature-card">
+            <h3>[1] 统一接口</h3>
+            <p>一个密钥接入所有 AI 模型</p>
+        </div>
+        <div class="feature-card">
+            <h3>[2] 按需付费</h3>
+            <p>灵活充值 用多少付多少</p>
+        </div>
+        <div class="feature-card">
+            <h3>[3] 稳定快速</h3>
+            <p>多节点负载 99.9% 可用性</p>
+        </div>
+        <div class="feature-card">
+            <h3>[4] 安全可靠</h3>
+            <p>加密传输 保护隐私安全</p>
+        </div>
+    </section>
+    <footer class="footer">
+        <p>© 2026 SAINT CODE ◆ 保留所有权利</p>
+    </footer>
+</body>
+</html>

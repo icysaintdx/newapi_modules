@@ -1,0 +1,1959 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统配置 - PayPro</title>
+    <script src="/js/vue.global.min.js"></script>
+    <link href="/css/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css">
+    <style>
+        .layout { display: flex; min-height: 100vh; }
+        .sidebar { width: 280px; background: var(--glass-bg); backdrop-filter: blur(12px); border-right: var(--glass-border); color: var(--text-color); padding: 24px 0; position: fixed; height: 100vh; overflow-y: auto; }
+        .logo { padding: 0 30px 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); margin-bottom: 24px; }
+        .logo h1 { font-size: 22px; font-weight: 700; background: linear-gradient(to right, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .menu { list-style: none; }
+        .menu-item { margin: 8px 16px; }
+        .menu-link { display: flex; align-items: center; gap: 14px; padding: 14px 20px; color: var(--text-muted); text-decoration: none; border-radius: 12px; transition: all 0.3s; }
+        .menu-link:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-color); }
+        .menu-link.active { background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2)); color: var(--text-color); border: 1px solid rgba(99, 102, 241, 0.3); }
+        .menu-link i { font-size: 20px; width: 24px; }
+        .main { flex: 1; margin-left: 280px; padding: 24px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+        .header h2 { font-size: 28px; font-weight: 700; }
+        .user-info { display: flex; align-items: center; gap: 16px; }
+        .logout-btn { padding: 10px 20px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; cursor: pointer; }
+        
+        .tabs { display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 2px solid rgba(255,255,255,0.1); flex-wrap: wrap; }
+        .tab-btn { padding: 12px 20px; background: none; border: none; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.3s; font-size: 14px; white-space: nowrap; }
+        .tab-btn:hover { color: var(--text-color); }
+        .tab-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .config-section { background: var(--glass-bg); border: var(--glass-border); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+        .section-title { font-size: 18px; font-weight: 600; margin-bottom: 20px; color: var(--primary-color); display: flex; align-items: center; gap: 8px; }
+        
+        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--text-color); font-weight: 500; font-size: 14px; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-color); font-size: 14px; box-sizing: border-box; }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: var(--primary-color); }
+        .form-group select option { background: #1a1a1a; color: var(--text-color); padding: 8px; }
+        .form-group select optgroup { background: #2a2a2a; color: var(--text-color); font-weight: 600; }
+        .form-group textarea { min-height: 100px; resize: vertical; font-family: monospace; }
+        .form-group small { display: block; margin-top: 4px; color: var(--text-muted); font-size: 12px; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        
+        .checkbox-group { display: flex; align-items: center; gap: 8px; }
+        .checkbox-group input[type="checkbox"] { width: auto; }
+        
+        .btn-group { display: flex; gap: 12px; margin-top: 24px; justify-content: flex-end; }
+        .btn { padding: 12px 32px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s; }
+        .btn-primary { background: var(--primary-color); color: white; }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-secondary { background: rgba(255,255,255,0.1); color: var(--text-color); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.15); }
+        
+        .alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+        .alert-success { background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); color: #22c55e; }
+        .alert-error { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; }
+        .alert-warning { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: #f59e0b; }
+        
+        .loading { text-align: center; padding: 40px; color: var(--text-muted); }
+        
+        .payment-method-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+        .payment-method-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .payment-method-name { font-size: 16px; font-weight: 600; color: var(--text-color); }
+        .toggle-switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 24px; }
+        .toggle-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .toggle-slider { background-color: var(--primary-color); }
+        input:checked + .toggle-slider:before { transform: translateX(26px); }
+        
+        .search-box { margin-bottom: 20px; }
+        .search-box input { width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-color); font-size: 14px; }
+        .search-box input:focus { outline: none; border-color: var(--primary-color); }
+
+        /* 二维码上传样式 */
+        .qr-upload-group { display: flex; gap: 8px; align-items: center; }
+        .qr-upload-group input[type="text"] { flex: 1; }
+        .btn-upload { padding: 12px 20px; white-space: nowrap; }
+        .qr-preview { margin-top: 12px; padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; text-align: center; }
+        .qr-preview img { max-width: 200px; max-height: 200px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="layout">
+            <aside class="sidebar">
+                <div class="logo">
+                    <h1><i class="ri-money-dollar-circle-line"></i> PayPro</h1>
+                </div>
+                <ul class="menu">
+                    <li class="menu-item" v-for="menu in menus" :key="menu.id">
+                        <a :href="menu.path" class="menu-link" :class="{ active: menu.path === '/admin/settings.html' }">
+                            <i :class="menu.icon"></i>
+                            <span>{{ menu.name }}</span>
+                        </a>
+                    </li>
+                </ul>
+            </aside>
+            
+            <main class="main">
+                <div class="header">
+                    <h2>系统配置</h2>
+                    <div class="user-info">
+                        <span>{{ adminInfo.username }}</span>
+                        <button class="logout-btn" @click="handleLogout">退出登录</button>
+                    </div>
+                </div>
+
+                <div v-if="message.show" :class="'alert alert-' + message.type">
+                    <i :class="message.type === 'success' ? 'ri-checkbox-circle-line' : 'ri-error-warning-line'"></i>
+                    {{ message.text }}
+                </div>
+
+                <div v-if="loading" class="loading">
+                    <i class="ri-loader-4-line" style="font-size: 32px; animation: spin 1s linear infinite;"></i>
+                    <div>加载中...</div>
+                </div>
+
+                <div v-else>
+                    <div class="tabs">
+                        <button class="tab-btn" :class="{ active: activeTab === 'system' }" @click="activeTab = 'system'">
+                            <i class="ri-settings-3-line"></i> 系统配置
+                        </button>
+                        <button class="tab-btn" :class="{ active: activeTab === 'email' }" @click="activeTab = 'email'">
+                            <i class="ri-mail-line"></i> 邮箱配置
+                        </button>
+                        <button class="tab-btn" :class="{ active: activeTab === 'payment' }" @click="activeTab = 'payment'">
+                            <i class="ri-alipay-line"></i> 支付配置
+                        </button>
+                        <button class="tab-btn" :class="{ active: activeTab === 'payment_method' }" @click="activeTab = 'payment_method'">
+                            <i class="ri-bank-card-line"></i> 支付方式
+                        </button>
+                        <button class="tab-btn" :class="{ active: activeTab === 'security' }" @click="activeTab = 'security'">
+                            <i class="ri-shield-line"></i> 安全配置
+                        </button>
+                        <button class="tab-btn" :class="{ active: activeTab === 'page_text' }" @click="activeTab = 'page_text'">
+                            <i class="ri-file-text-line"></i> 页面文案
+                        </button>
+                        <button class="tab-btn" :class="{ active: activeTab === 'qrcode' }" @click="activeTab = 'qrcode'; loadQrCodes()">
+                            <i class="ri-qr-code-line"></i> 二维码管理
+                        </button>
+                        <button class="tab-btn" :class="{ active: activeTab === 'amount_mapping' }" @click="activeTab = 'amount_mapping'; loadAmountMappings()">
+                            <i class="ri-exchange-line"></i> 金额映射
+                        </button>
+                        <button class="tab-btn" :class="{ active: activeTab === 'notification' }" @click="activeTab = 'notification'">
+                            <i class="ri-notification-3-line"></i> 推送通知
+                        </button>
+                    </div>
+
+                    <!-- 系统配置 -->
+                    <div class="tab-content" :class="{ active: activeTab === 'system' }">
+                        <div class="config-section">
+                            <div class="section-title"><i class="ri-settings-3-line"></i> 系统基础配置</div>
+                            <div class="form-grid">
+                                <div class="form-group" v-for="config in getConfigsByGroup('system')" :key="config.configKey">
+                                    <label>{{ config.description }}</label>
+                                    <input v-model="configValues[config.configKey]" :placeholder="config.description">
+                                    <small>配置键: {{ config.configKey }}</small>
+                                </div>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-secondary" @click="loadConfigs">重置</button>
+                                <button class="btn btn-primary" @click="saveConfigs" :disabled="saving">
+                                    {{ saving ? '保存中...' : '保存配置' }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 邮箱配置 -->
+                    <div class="tab-content" :class="{ active: activeTab === 'email' }">
+                        <div class="config-section">
+                            <div class="section-title"><i class="ri-mail-line"></i> 邮箱配置</div>
+
+                            <!-- 邮件服务商选择 -->
+                            <div class="alert alert-warning" style="margin-bottom: 20px;">
+                                <i class="ri-information-line"></i>
+                                选择邮件服务商后，只需填写对应服务商的配置项即可
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label>邮件服务商</label>
+                                <select v-model="configValues['email.provider']" @change="onEmailProviderChange">
+                                    <option value="custom">自定义 SMTP</option>
+                                    <optgroup label="商业邮件服务 (推荐)">
+                                        <option value="resend">Resend (3000封/月免费, $20/月 5万封)</option>
+                                        <option value="brevo">Brevo (9000封/月免费, $25/月)</option>
+                                        <option value="smtp2go">SMTP2Go (1000封/月免费, $16/月 1万封)</option>
+                                        <option value="mailersend">MailerSend (6000封/月免费, $28/月 1万封)</option>
+                                    </optgroup>
+                                    <optgroup label="个人邮箱">
+                                        <option value="qq">QQ邮箱</option>
+                                        <option value="163">163邮箱</option>
+                                        <option value="gmail">Gmail</option>
+                                        <option value="outlook">Outlook</option>
+                                    </optgroup>
+                                </select>
+                                <small>不同服务商的免费额度和价格不同，请根据需求选择</small>
+                            </div>
+
+                            <!-- 根据选择的服务商显示对应配置 -->
+                            <div class="form-grid">
+                                <!-- 通用配置 -->
+                                <div class="form-group">
+                                    <label>邮件发送者</label>
+                                    <input v-model="configValues['email.sender']" placeholder="发件人邮箱地址">
+                                    <small>配置键: email.sender</small>
+                                </div>
+                                <div class="form-group">
+                                    <label>审核邮件接收者</label>
+                                    <input v-model="configValues['email.receiver']" placeholder="收件人邮箱地址">
+                                    <small>配置键: email.receiver</small>
+                                </div>
+
+                                <!-- 自定义 SMTP -->
+                                <template v-if="configValues['email.provider'] === 'custom'">
+                                    <div class="form-group">
+                                        <label>SMTP服务器地址</label>
+                                        <input v-model="configValues['email.smtp_host']" placeholder="smtp.example.com">
+                                        <small>配置键: email.smtp_host</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>SMTP端口</label>
+                                        <input type="number" v-model="configValues['email.smtp_port']" placeholder="465">
+                                        <small>配置键: email.smtp_port</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>邮件协议</label>
+                                        <select v-model="configValues['email.protocol']">
+                                            <option value="smtp">SMTP</option>
+                                            <option value="smtps">SMTPS (SSL)</option>
+                                        </select>
+                                        <small>配置键: email.protocol</small>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>邮箱账号</label>
+                                        <input type="password" v-model="configValues['email.username']" placeholder="邮箱账号">
+                                        <small>配置键: email.username</small>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>邮箱授权码</label>
+                                        <input type="password" v-model="configValues['email.password']" placeholder="邮箱授权码或密码">
+                                        <small>配置键: email.password</small>
+                                    </div>
+                                </template>
+
+                                <!-- Resend (官方文档: smtp.resend.com) -->
+                                <template v-if="configValues['email.provider'] === 'resend'">
+                                    <div class="alert alert-warning">
+                                        <i class="ri-information-line"></i>
+                                        SMTP服务器: smtp.resend.com | 用户名: resend (固定)
+                                        <br>
+                                        <a href="https://resend.com/docs/send-with-smtp" target="_blank" style="color: #f59e0b; text-decoration: underline;">
+                                            📖 查看 Resend 官方文档
+                                        </a>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>SMTP 端口</label>
+                                        <select v-model="configValues['email.resend.smtp_port']">
+                                            <option value="587">587 (STARTTLS - 推荐)</option>
+                                            <option value="465">465 (SMTPS)</option>
+                                            <option value="2587">2587 (STARTTLS 备用)</option>
+                                            <option value="2465">2465 (SMTPS 备用)</option>
+                                        </select>
+                                        <small>选择 SMTP 端口，推荐使用 587</small>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>Resend API Key (作为SMTP密码)</label>
+                                        <input type="password" v-model="configValues['email.resend.api_key']" placeholder="re_...">
+                                        <small>在 resend.com 获取 API Key，用作 SMTP 密码</small>
+                                    </div>
+                                </template>
+
+                                <!-- Brevo (官方文档: smtp-relay.brevo.com:587) -->
+                                <template v-if="configValues['email.provider'] === 'brevo'">
+                                    <div class="alert alert-warning">
+                                        <i class="ri-information-line"></i>
+                                        SMTP服务器: smtp-relay.brevo.com | 端口: 587
+                                        <br>
+                                        <a href="https://developers.brevo.com/docs/send-a-transactional-email" target="_blank" style="color: #f59e0b; text-decoration: underline;">
+                                            📖 查看 Brevo 官方文档
+                                        </a>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>Brevo SMTP登录邮箱</label>
+                                        <input type="password" v-model="configValues['email.brevo.smtp_user']" placeholder="your@smtp-brevo.com">
+                                        <small>在 brevo.com 获取 SMTP 登录邮箱</small>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>Brevo SMTP Key</label>
+                                        <input type="password" v-model="configValues['email.brevo.smtp_key']" placeholder="xkeysib-...">
+                                        <small>在 brevo.com 获取 SMTP Key</small>
+                                    </div>
+                                </template>
+
+                                <!-- SMTP2Go (mail.smtp2go.com:587) -->
+                                <template v-if="configValues['email.provider'] === 'smtp2go'">
+                                    <div class="alert alert-warning">
+                                        <i class="ri-information-line"></i>
+                                        SMTP服务器: mail.smtp2go.com | 端口: 587
+                                        <br>
+                                        <a href="https://www.smtp2go.com/setup/" target="_blank" style="color: #f59e0b; text-decoration: underline;">
+                                            📖 查看 SMTP2Go 官方文档
+                                        </a>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>SMTP2Go SMTP用户名</label>
+                                        <input type="password" v-model="configValues['email.smtp2go.smtp_user']" placeholder="SMTP用户名">
+                                        <small>在 smtp2go.com 获取 SMTP 用户名</small>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>SMTP2Go SMTP密码</label>
+                                        <input type="password" v-model="configValues['email.smtp2go.smtp_pass']" placeholder="SMTP密码">
+                                        <small>在 smtp2go.com 获取 SMTP 密码</small>
+                                    </div>
+                                </template>
+
+                                <!-- MailerSend (smtp.mailersend.net:587) -->
+                                <template v-if="configValues['email.provider'] === 'mailersend'">
+                                    <div class="alert alert-warning">
+                                        <i class="ri-information-line"></i>
+                                        SMTP服务器: smtp.mailersend.net | 端口: 587
+                                        <br>
+                                        <a href="https://www.mailersend.com/help/how-to-send-emails-using-smtp" target="_blank" style="color: #f59e0b; text-decoration: underline;">
+                                            📖 查看 MailerSend 官方文档
+                                        </a>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>MailerSend SMTP用户名</label>
+                                        <input type="password" v-model="configValues['email.mailersend.smtp_user']" placeholder="SMTP用户名">
+                                        <small>在 mailersend.com 获取 SMTP 用户名</small>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>MailerSend SMTP密码</label>
+                                        <input type="password" v-model="configValues['email.mailersend.smtp_pass']" placeholder="SMTP密码">
+                                        <small>在 mailersend.com 获取 SMTP 密码</small>
+                                    </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>发件人邮箱</label>
+                                        <input v-model="configValues['email.mailersend.from_email']" placeholder="noreply@yourdomain.com">
+                                        <small>需要在 MailerSend 验证域名</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>发件人名称</label>
+                                        <input v-model="configValues['email.mailersend.from_name']" placeholder="PayPro">
+                                        <small>配置键: email.mailersend.from_name</small>
+                                    </div>
+                                </template>
+
+                                <!-- QQ邮箱 -->
+                                <template v-if="configValues['email.provider'] === 'qq'">
+                                    <div class="form-group full-width">
+                                        <label>QQ邮箱账号</label>
+                                        <input type="password" v-model="configValues['email.username']" placeholder="your@qq.com">
+                                        <small>配置键: email.username</small>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>QQ邮箱授权码</label>
+                                        <input type="password" v-model="configValues['email.password']" placeholder="在QQ邮箱设置中获取授权码">
+                                        <small>不是QQ密码，需要在邮箱设置中生成授权码</small>
+                                    </div>
+                                </template>
+
+                                <!-- 163邮箱 -->
+                                <template v-if="configValues['email.provider'] === '163'">
+                                    <div class="form-group full-width">
+                                        <label>163邮箱账号</label>
+                                        <input type="password" v-model="configValues['email.username']" placeholder="your@163.com">
+                                        <small>配置键: email.username</small>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>163邮箱授权码</label>
+                                        <input type="password" v-model="configValues['email.password']" placeholder="在163邮箱设置中获取授权码">
+                                        <small>不是邮箱密码，需要在邮箱设置中生成授权码</small>
+                                    </div>
+                                </template>
+
+                                <!-- Gmail -->
+                                <template v-if="configValues['email.provider'] === 'gmail'">
+                                    <div class="form-group full-width">
+                                        <label>Gmail账号</label>
+                                        <input type="password" v-model="configValues['email.username']" placeholder="your@gmail.com">
+                                        <small>配置键: email.username</small>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>Gmail应用专用密码</label>
+                                        <input type="password" v-model="configValues['email.password']" placeholder="在Google账号设置中生成应用专用密码">
+                                        <small>需要开启两步验证后生成应用专用密码</small>
+                                    </div>
+                                </template>
+
+                                <!-- Outlook -->
+                                <template v-if="configValues['email.provider'] === 'outlook'">
+                                    <div class="form-group full-width">
+                                        <label>Outlook账号</label>
+                                        <input type="password" v-model="configValues['email.username']" placeholder="your@outlook.com">
+                                        <small>配置键: email.username</small>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>Outlook密码</label>
+                                        <input type="password" v-model="configValues['email.password']" placeholder="Outlook账号密码">
+                                        <small>配置键: email.password</small>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <div class="btn-group">
+                                <button class="btn btn-secondary" @click="loadConfigs">重置</button>
+                                <button class="btn btn-primary" @click="saveConfigs" :disabled="saving">
+                                    {{ saving ? '保存中...' : '保存配置' }}
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 邮件测试 -->
+                        <div class="config-section">
+                            <div class="section-title"><i class="ri-mail-send-line"></i> 邮件测试</div>
+                            <div class="alert alert-warning">
+                                <i class="ri-information-line"></i>
+                                请先保存邮箱配置，然后输入测试邮箱地址发送测试邮件。系统会根据您选择的邮件服务商自动使用正确的配置。
+                            </div>
+                            <div class="form-grid">
+                                <div class="form-group full-width">
+                                    <label>测试收件邮箱</label>
+                                    <input v-model="testEmail" type="email" placeholder="请输入用于接收测试邮件的邮箱地址">
+                                    <small>输入一个有效的邮箱地址，系统将发送一封测试邮件到该地址</small>
+                                </div>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-primary" @click="sendTestEmail" :disabled="testingEmail || !testEmail">
+                                    <i class="ri-mail-send-line"></i> {{ testingEmail ? '发送中...' : '发送测试邮件' }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 支付配置 -->
+                    <div class="tab-content" :class="{ active: activeTab === 'payment' }">
+                        <div class="config-section">
+                            <div class="section-title"><i class="ri-alipay-line"></i> 支付配置</div>
+                            <div class="alert alert-warning">
+                                <i class="ri-information-line"></i>
+                                二维码图片可以直接上传，系统会自动保存并填充 URL
+                            </div>
+                            <div class="form-grid">
+                                <div class="form-group" v-for="config in getConfigsByGroup('payment')" :key="config.configKey"
+                                     :class="{ 'full-width': config.isSensitive || config.configType === 'TEXT' }">
+                                    <label>{{ config.description }}</label>
+
+                                    <!-- 长文本配置 -->
+                                    <textarea v-if="config.configType === 'TEXT'" v-model="configValues[config.configKey]"
+                                              :placeholder="config.description" rows="4"></textarea>
+
+                                    <!-- 二维码 URL 配置（带上传功能） -->
+                                    <template v-else-if="config.configKey.includes('.qr.url') || config.configKey.includes('qr_url')">
+                                        <div class="qr-upload-group">
+                                            <input v-model="configValues[config.configKey]"
+                                                   type="text"
+                                                   :placeholder="config.description">
+                                            <input type="file"
+                                                   :ref="'file_' + config.configKey"
+                                                   accept="image/*"
+                                                   style="display: none"
+                                                   @change="handleQrCodeUpload($event, config.configKey)">
+                                            <button type="button"
+                                                    class="btn btn-secondary btn-upload"
+                                                    @click="$refs['file_' + config.configKey][0].click()"
+                                                    :disabled="uploadingQrCode[config.configKey]">
+                                                <i class="ri-upload-2-line"></i>
+                                                {{ uploadingQrCode[config.configKey] ? '上传中...' : '上传图片' }}
+                                            </button>
+                                        </div>
+                                        <small>配置键: {{ config.configKey }} | 支持 JPG、PNG 格式</small>
+                                        <!-- 图片预览 -->
+                                        <div v-if="configValues[config.configKey]" class="qr-preview">
+                                            <img :src="configValues[config.configKey]" alt="二维码预览">
+                                        </div>
+                                    </template>
+
+                                    <!-- 普通配置 -->
+                                    <input v-else v-model="configValues[config.configKey]"
+                                           :type="config.isSensitive ? 'password' : 'text'"
+                                           :placeholder="config.description">
+
+                                    <small v-if="!config.configKey.includes('.qr.url') && !config.configKey.includes('qr_url')">
+                                        配置键: {{ config.configKey }}
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-secondary" @click="loadConfigs">重置</button>
+                                <button class="btn btn-primary" @click="saveConfigs" :disabled="saving">
+                                    {{ saving ? '保存中...' : '保存配置' }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 支付方式管理 -->
+                    <div class="tab-content" :class="{ active: activeTab === 'payment_method' }">
+                        <div class="config-section">
+                            <div class="section-title"><i class="ri-bank-card-line"></i> 支付方式管理</div>
+                            <div class="alert alert-warning">
+                                <i class="ri-information-line"></i>
+                                配置各支付方式的启用状态、显示顺序和其他选项
+                            </div>
+                            
+                            <div v-for="method in paymentMethods" :key="method.id" class="payment-method-card">
+                                <div class="payment-method-header">
+                                    <div class="payment-method-name">{{ method.name }}</div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" v-model="configValues['payment.method.' + method.id + '.enabled']" 
+                                               @change="configValues['payment.method.' + method.id + '.enabled'] = $event.target.checked ? 'true' : 'false'">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>支付方式名称</label>
+                                        <input v-model="configValues['payment.method.' + method.id + '.name']" placeholder="支付方式名称">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>显示顺序</label>
+                                        <input type="number" v-model="configValues['payment.method.' + method.id + '.sort']" placeholder="显示顺序">
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>支付方式描述</label>
+                                        <input v-model="configValues['payment.method.' + method.id + '.description']" placeholder="支付方式描述">
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="checkbox-group">
+                                            <input type="checkbox" :id="'night_' + method.id" 
+                                                   v-model="configValues['payment.method.' + method.id + '.allow_night']"
+                                                   @change="configValues['payment.method.' + method.id + '.allow_night'] = $event.target.checked ? 'true' : 'false'">
+                                            <label :for="'night_' + method.id">允许夜间支付</label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="checkbox-group">
+                                            <input type="checkbox" :id="'local_' + method.id"
+                                                   v-model="configValues['payment.method.' + method.id + '.use_local_qr']"
+                                                   @change="configValues['payment.method.' + method.id + '.use_local_qr'] = $event.target.checked ? 'true' : 'false'">
+                                            <label :for="'local_' + method.id">使用本地二维码</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="btn-group">
+                                <button class="btn btn-secondary" @click="loadConfigs">重置</button>
+                                <button class="btn btn-primary" @click="saveConfigs" :disabled="saving">
+                                    {{ saving ? '保存中...' : '保存配置' }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 安全配置 -->
+                    <div class="tab-content" :class="{ active: activeTab === 'security' }">
+                        <div class="config-section">
+                            <div class="section-title"><i class="ri-shield-line"></i> 安全配置</div>
+                            <div class="form-grid">
+                                <div class="form-group" v-for="config in getConfigsByGroup('security')" :key="config.configKey"
+                                     :class="{ 'full-width': config.isSensitive }">
+                                    <label>{{ config.description }}</label>
+                                    <input v-model="configValues[config.configKey]" 
+                                           :type="config.isSensitive ? 'password' : (config.configType === 'NUMBER' ? 'number' : 'text')"
+                                           :placeholder="config.description">
+                                    <small>配置键: {{ config.configKey }}</small>
+                                </div>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-secondary" @click="loadConfigs">重置</button>
+                                <button class="btn btn-primary" @click="saveConfigs" :disabled="saving">
+                                    {{ saving ? '保存中...' : '保存配置' }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 页面文案 -->
+                    <div class="tab-content" :class="{ active: activeTab === 'page_text' }">
+                        <div class="search-box" style="margin-bottom: 20px;">
+                            <input v-model="searchText" placeholder="搜索配置项..." @input="filterPageTexts">
+                        </div>
+
+                        <div v-for="(texts, pageName) in groupedPageTexts" :key="pageName" class="config-section">
+                            <div class="section-title"><i class="ri-file-text-line"></i> {{ pageName }}</div>
+                            <div class="form-grid">
+                                <div class="form-group" v-for="config in texts" :key="config.configKey">
+                                    <label>{{ config.description }}</label>
+                                    <input v-model="configValues[config.configKey]" :placeholder="config.description">
+                                    <small>配置键: {{ config.configKey }}</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="btn-group" style="margin-top: 24px;">
+                            <button class="btn btn-secondary" @click="loadConfigs">重置</button>
+                            <button class="btn btn-primary" @click="saveConfigs" :disabled="saving">
+                                {{ saving ? '保存中...' : '保存配置' }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 二维码管理 -->
+                    <div class="tab-content" :class="{ active: activeTab === 'qrcode' }">
+                        <div class="config-section">
+                            <div class="section-title"><i class="ri-upload-cloud-line"></i> 上传二维码</div>
+                            <div style="border: 2px dashed rgba(255, 255, 255, 0.2); border-radius: 12px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.3s;"
+                                 @click="$refs.qrcodeFileInput.click()"
+                                 @dragover.prevent="qrcodeDragging = true"
+                                 @dragleave.prevent="qrcodeDragging = false"
+                                 @drop.prevent="handleQrcodeDrop"
+                                 :style="qrcodeDragging ? 'border-color: var(--primary-color); background: rgba(99, 102, 241, 0.1);' : ''">
+                                <i class="ri-upload-cloud-2-line" style="font-size: 48px; color: var(--text-muted); margin-bottom: 16px;"></i>
+                                <p style="color: var(--text-color); margin-bottom: 8px;">点击或拖拽上传二维码图片</p>
+                                <p style="color: var(--text-muted); font-size: 14px;">支持批量上传 PNG、JPG 格式</p>
+                                <input type="file" ref="qrcodeFileInput" multiple accept="image/png,image/jpeg,image/jpg" @change="handleQrcodeSelect" style="display: none;">
+                            </div>
+                        </div>
+
+                        <div class="config-section">
+                            <div class="section-title">
+                                <i class="ri-qr-code-line"></i> 已上传的二维码 ({{ filteredQrCodes.length }})
+                            </div>
+
+                            <div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
+                                <select v-model="qrcodeFilterPayType" style="padding: 10px 16px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; background: rgba(255, 255, 255, 0.05); color: var(--text-color); font-size: 14px;">
+                                    <option value="">全部支付方式</option>
+                                    <option value="alipay">支付宝</option>
+                                    <option value="wechat">微信</option>
+                                </select>
+                                <select v-model="qrcodeFilterType" style="padding: 10px 16px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; background: rgba(255, 255, 255, 0.05); color: var(--text-color); font-size: 14px;">
+                                    <option value="">全部类型</option>
+                                    <option value="normal">普通收款码</option>
+                                    <option value="fixed">固定金额</option>
+                                </select>
+
+                                <button class="btn btn-sm" @click="toggleSelectAll" v-if="filteredQrCodes.length > 0" style="padding: 8px 16px; background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(99, 102, 241, 0.3);">
+                                    <i :class="isAllSelected ? 'ri-checkbox-line' : 'ri-checkbox-blank-line'"></i>
+                                    {{ isAllSelected ? '取消全选' : '全选' }}
+                                </button>
+
+                                <div style="margin-left: auto; display: flex; gap: 8px;" v-if="selectedQrCodes.length > 0">
+                                    <select v-model="batchPayType" style="padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: var(--text-color); font-size: 13px;">
+                                        <option value="">批量设置支付方式</option>
+                                        <option value="alipay">支付宝</option>
+                                        <option value="wechat">微信</option>
+                                    </select>
+                                    <button class="btn btn-sm" style="background: rgba(99, 102, 241, 0.2); padding: 6px 12px;" @click="applyBatchPayType" :disabled="!batchPayType">应用</button>
+
+                                    <select v-model="batchQrType" style="padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: var(--text-color); font-size: 13px;">
+                                        <option value="">批量设置类型</option>
+                                        <option value="normal">普通收款码</option>
+                                        <option value="fixed">固定金额</option>
+                                    </select>
+                                    <button class="btn btn-sm" style="background: rgba(99, 102, 241, 0.2); padding: 6px 12px;" @click="applyBatchQrType" :disabled="!batchQrType">应用</button>
+
+                                    <input type="number" v-model.number="batchAmount" placeholder="批量金额" step="0.01" min="0.01" style="width: 100px; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: var(--text-color); font-size: 13px;">
+                                    <button class="btn btn-sm" style="background: rgba(99, 102, 241, 0.2); padding: 6px 12px;" @click="applyBatchAmount" :disabled="!batchAmount">应用</button>
+
+                                    <button class="btn btn-sm" style="background: rgba(139, 92, 246, 0.2); padding: 6px 12px;" @click="openCropModal">
+                                        <i class="ri-crop-line"></i> 批量裁剪
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div v-if="qrCodes.filter(q => !q.saved).length > 0" style="margin-bottom: 20px; display: flex; gap: 12px;">
+                                <button class="btn btn-primary" @click="saveAllQrCodes">
+                                    <i class="ri-save-line"></i> 全部保存 ({{ qrCodes.filter(q => !q.saved).length }} 个)
+                                </button>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+                                <div v-for="qr in filteredQrCodes" :key="qr.id" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 16px;"
+                                     :style="selectedQrCodes.includes(qr.id) ? 'border-color: var(--primary-color); background: rgba(99, 102, 241, 0.1);' : ''">
+
+                                    <div style="position: relative;">
+                                        <input type="checkbox" v-model="selectedQrCodes" :value="qr.id"
+                                               style="position: absolute; top: 8px; left: 8px; width: 20px; height: 20px; cursor: pointer; z-index: 10;">
+                                        <img :src="qr.preview" style="width: 100%; aspect-ratio: 1; object-fit: contain; border-radius: 8px; background: white; margin-bottom: 12px;">
+                                    </div>
+
+                                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <label style="font-size: 12px; color: var(--text-muted); min-width: 60px;">文件名</label>
+                                            <input type="text" :value="qr.fileName" readonly style="flex: 1; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: var(--text-color); font-size: 14px;">
+                                        </div>
+
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <label style="font-size: 12px; color: var(--text-muted); min-width: 60px;">支付方式</label>
+                                            <select v-model="qr.payType" style="flex: 1; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: var(--text-color); font-size: 14px;">
+                                                <option value="alipay">支付宝</option>
+                                                <option value="wechat">微信</option>
+                                            </select>
+                                        </div>
+
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <label style="font-size: 12px; color: var(--text-muted); min-width: 60px;">类型</label>
+                                            <select v-model="qr.qrType" @change="handleQrTypeChange(qr)" style="flex: 1; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: var(--text-color); font-size: 14px;">
+                                                <option value="normal">普通收款码</option>
+                                                <option value="fixed">固定金额</option>
+                                            </select>
+                                        </div>
+
+                                        <div v-if="qr.qrType === 'fixed'" style="display: flex; align-items: center; gap: 8px;">
+                                            <label style="font-size: 12px; color: var(--text-muted); min-width: 60px;">金额(元)</label>
+                                            <input type="number" v-model.number="qr.amount" step="0.01" min="0.01" style="flex: 1; padding: 8px 12px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: var(--text-color); font-size: 14px;">
+                                        </div>
+
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <label style="font-size: 12px; color: var(--text-muted); min-width: 60px;">系统文件名</label>
+                                            <span style="flex: 1; padding: 8px 12px; color: var(--text-color); font-size: 14px; font-family: monospace; background: rgba(255, 255, 255, 0.03); border-radius: 6px;">{{ qr.fileName || 'N/A' }}</span>
+                                        </div>
+                                    </div>
+
+                                    <div style="display: flex; gap: 8px; margin-top: 12px;">
+                                        <button v-if="!qr.saved" @click="saveQrCode(qr)" class="btn btn-primary" style="flex: 1; padding: 6px 12px; font-size: 12px;">
+                                            <i class="ri-save-line"></i> 保存
+                                        </button>
+                                        <button @click="deleteQrCode(qr)" class="btn" style="flex: 1; padding: 6px 12px; font-size: 12px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white;">
+                                            <i class="ri-delete-bin-line"></i> 删除
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-if="filteredQrCodes.length === 0" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                                <i class="ri-image-line" style="font-size: 48px; margin-bottom: 16px;"></i>
+                                <p>暂无二维码，请上传</p>
+                            </div>
+                        </div>
+
+                        <!-- 批量裁剪模态框 -->
+                        <div v-if="showCropModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 9999; display: flex; align-items: center; justify-content: center;" @click="showCropModal = false">
+                            <div style="background: var(--glass-bg); border: var(--glass-border); border-radius: 20px; padding: 32px; max-width: 800px; width: 90%;" @click.stop>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                                    <h3 style="font-size: 18px; color: var(--text-color);">批量裁剪二维码</h3>
+                                    <button @click="showCropModal = false" style="background: none; border: none; color: var(--text-muted); font-size: 24px; cursor: pointer;">×</button>
+                                </div>
+
+                                <div style="margin-bottom: 20px;">
+                                    <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px;">
+                                        调整裁剪区域，将应用到所有选中的 {{ selectedQrCodes.length }} 个二维码
+                                    </p>
+
+                                    <div style="position: relative; display: inline-block;">
+                                        <canvas ref="cropCanvas" style="max-width: 100%; border: 2px solid var(--primary-color); border-radius: 8px;"></canvas>
+                                        <div v-if="cropArea"
+                                             style="position: absolute; border: 2px solid #00ff00; background: rgba(0, 255, 0, 0.1); cursor: move;"
+                                             :style="{
+                                                 left: cropArea.x + 'px',
+                                                 top: cropArea.y + 'px',
+                                                 width: cropArea.width + 'px',
+                                                 height: cropArea.height + 'px'
+                                             }"
+                                             @mousedown="startDrag">
+                                            <div style="position: absolute; right: -5px; bottom: -5px; width: 10px; height: 10px; background: #00ff00; cursor: nwse-resize;" @mousedown.stop="startResize"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-grid" style="margin-bottom: 20px;">
+                                    <div class="form-group">
+                                        <label>X 坐标</label>
+                                        <input type="number" v-model.number="cropArea.x" min="0">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Y 坐标</label>
+                                        <input type="number" v-model.number="cropArea.y" min="0">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>宽度</label>
+                                        <input type="number" v-model.number="cropArea.width" min="1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>高度</label>
+                                        <input type="number" v-model.number="cropArea.height" min="1">
+                                    </div>
+                                </div>
+
+                                <div class="btn-group">
+                                    <button class="btn btn-secondary" @click="showCropModal = false">取消</button>
+                                    <button class="btn btn-primary" @click="applyCropToSelected">应用裁剪</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 金额映射 -->
+                    <div class="tab-content" :class="{ active: activeTab === 'amount_mapping' }">
+                        <div class="config-section">
+                            <div class="section-title"><i class="ri-exchange-line"></i> 金额映射配置</div>
+                            <div class="alert alert-warning" style="margin-bottom: 20px;">
+                                <i class="ri-information-line"></i>
+                                配置充值金额对应的实际收款金额列表，系统会随机选择一个收款码。例如：充值 10 元时，可以使用 10.00、9.99、9.98、9.97 的收款码，避免单个码被频繁使用。
+                            </div>
+
+                            <!-- 可用金额统计 -->
+                            <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                                <div style="font-size: 16px; font-weight: 600; color: var(--text-color); margin-bottom: 16px;">
+                                    <i class="ri-qr-code-line"></i> 已上传的固定金额二维码
+                                </div>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
+                                    <div v-for="stat in qrcodeStats" :key="stat.key" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 12px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                            <span style="color: var(--text-color); font-weight: 500;">{{ stat.payType === 'alipay' ? '支付宝' : '微信' }} {{ stat.amount }} 元</span>
+                                            <span style="color: var(--primary-color); font-weight: 600;">{{ stat.count }} 个码</span>
+                                        </div>
+                                        <div style="font-size: 12px; color: var(--text-muted);">
+                                            编号: {{ stat.qrNums.join(', ') }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-if="qrcodeStats.length === 0" style="text-align: center; padding: 20px; color: var(--text-muted);">
+                                    <p>暂无固定金额二维码，请先在"二维码管理"标签页上传</p>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom: 20px;">
+                                <button class="btn btn-primary" @click="showAddMappingForm = true" :disabled="qrcodeStats.length === 0">
+                                    <i class="ri-add-line"></i> 添加映射
+                                </button>
+                            </div>
+
+                            <div v-if="showAddMappingForm" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>支付方式</label>
+                                        <select v-model="newMapping.payType" @change="updateAvailableAmounts">
+                                            <option value="alipay">支付宝</option>
+                                            <option value="wechat">微信</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>充值金额(元)</label>
+                                        <input type="number" v-model.number="newMapping.chargeAmount" step="0.01" min="0.01" placeholder="例如: 10">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>实际收款金额(元) - 从已有二维码中选择</label>
+                                        <select v-model="newMapping.actualAmount">
+                                            <option value="">请选择</option>
+                                            <option v-for="amount in availableAmountsForMapping" :key="amount" :value="amount">
+                                                {{ amount }} 元 ({{ getQrCodeCount(newMapping.payType, amount) }} 个码)
+                                            </option>
+                                        </select>
+                                        <small v-if="availableAmountsForMapping.length === 0" style="color: #ef4444;">
+                                            当前支付方式没有可用的固定金额二维码
+                                        </small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>优先级</label>
+                                        <input type="number" v-model.number="newMapping.priority" min="1" placeholder="数字越小优先级越高">
+                                    </div>
+                                </div>
+                                <div class="btn-group">
+                                    <button class="btn btn-secondary" @click="showAddMappingForm = false; resetNewMapping()">取消</button>
+                                    <button class="btn btn-primary" @click="addAmountMapping" :disabled="!newMapping.actualAmount">保存</button>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; gap: 16px;">
+                                <div v-for="(mappings, key) in groupedMappings" :key="key" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 20px;">
+                                    <div style="font-size: 16px; font-weight: 600; color: var(--text-color); margin-bottom: 16px;">
+                                        {{ key }}
+                                    </div>
+                                    <div style="display: grid; gap: 12px;">
+                                        <div v-for="mapping in mappings" :key="mapping.id" style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255, 255, 255, 0.02); border-radius: 8px;">
+                                            <div style="display: flex; gap: 16px; align-items: center; flex: 1;">
+                                                <span style="color: var(--text-color);">充值 {{ mapping.chargeAmount }} 元</span>
+                                                <i class="ri-arrow-right-line" style="color: var(--text-muted);"></i>
+                                                <span :style="hasQrCode(mapping.payType, mapping.actualAmount) ? 'color: var(--primary-color);' : 'color: #ef4444;'">
+                                                    收款 {{ mapping.actualAmount }} 元
+                                                    <span v-if="hasQrCode(mapping.payType, mapping.actualAmount)" style="font-size: 12px; color: var(--text-muted);">
+                                                        ({{ getQrCodeCount(mapping.payType, mapping.actualAmount) }} 个码)
+                                                    </span>
+                                                    <span v-else style="font-size: 12px;">
+                                                        ⚠️ 缺少二维码
+                                                    </span>
+                                                </span>
+                                                <span style="color: var(--text-muted); font-size: 12px;">优先级: {{ mapping.priority }}</span>
+                                            </div>
+                                            <button @click="deleteAmountMapping(mapping.id)" class="btn" style="padding: 6px 12px; font-size: 12px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);">
+                                                <i class="ri-delete-bin-line"></i> 删除
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-if="Object.keys(groupedMappings).length === 0" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                                <i class="ri-exchange-line" style="font-size: 48px; margin-bottom: 16px;"></i>
+                                <p>暂无金额映射配置</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 推送通知配置 -->
+                    <div class="tab-content" :class="{ active: activeTab === 'notification' }">
+                        <div class="config-section">
+                            <div class="section-title"><i class="ri-notification-3-line"></i> 推送通知配置</div>
+                            
+                            <div class="alert alert-warning" style="margin-bottom: 20px;">
+                                <i class="ri-information-line"></i>
+                                配置多渠道推送通知，订单创建后自动推送到微信。优先级: PushPlus微信 > Server酱 > 邮件托底
+                            </div>
+
+                            <!-- PushPlus配置 -->
+                            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                    <div style="font-size: 16px; font-weight: 600; color: var(--text-color);">
+                                        <i class="ri-wechat-line"></i> PushPlus 微信推送
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" v-model="configValues['pushplus.enabled']" true-value="true" false-value="false">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>PushPlus Token</label>
+                                        <input type="password" v-model="configValues['pushplus.token']" placeholder="从 pushplus.plus 获取">
+                                        <small>
+                                            <a href="https://www.pushplus.plus" target="_blank" style="color: var(--primary-color);">
+                                                获取Token →
+                                            </a>
+                                        </small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>每日推送限额</label>
+                                        <input type="number" v-model.number="configValues['pushplus.daily_limit']" placeholder="190">
+                                        <small>免费版每日200条，建议设置190（预留缓冲）</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Server酱配置 -->
+                            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                    <div style="font-size: 16px; font-weight: 600; color: var(--text-color);">
+                                        <i class="ri-server-line"></i> Server酱推送（备用）
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" v-model="configValues['serverchan.enabled']" true-value="true" false-value="false">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>Server酱 SendKey</label>
+                                        <input type="password" v-model="configValues['serverchan.sendkey']" placeholder="从 sct.ftqq.com 获取">
+                                        <small>
+                                            <a href="https://sct.ftqq.com" target="_blank" style="color: var(--primary-color);">
+                                                获取SendKey →
+                                            </a>
+                                        </small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>每日推送限额</label>
+                                        <input type="number" v-model.number="configValues['serverchan.daily_limit']" placeholder="5">
+                                        <small>免费版每日5条，付费版500条/月</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 管理员邮件配置（托底） -->
+                            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                                <div style="font-size: 16px; font-weight: 600; color: var(--text-color); margin-bottom: 16px;">
+                                    <i class="ri-mail-line"></i> 管理员邮件通知（托底方案）
+                                </div>
+
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>管理员邮箱（接收审核通知）</label>
+                                        <input v-model="configValues['admin.email.receiver']" placeholder="admin@example.com">
+                                        <small>接收订单审核通知的管理员邮箱</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>发件邮箱</label>
+                                        <input v-model="configValues['admin.email.sender']" placeholder="noreply@example.com">
+                                        <small>发送审核通知的邮箱地址（需在"邮箱配置"标签页配置SMTP）</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 推送策略说明 -->
+                            <div style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                                <div style="font-size: 16px; font-weight: 600; color: var(--primary-color); margin-bottom: 12px;">
+                                    <i class="ri-information-line"></i> 推送策略
+                                </div>
+                                <ul style="margin: 0; padding-left: 20px; color: var(--text-color); line-height: 1.8;">
+                                    <li>每日前190条 → PushPlus微信推送</li>
+                                    <li>第191-195条 → Server酱推送</li>
+                                    <li>超过195条或所有渠道失败 → 邮件托底</li>
+                                    <li>任何渠道失败都会自动降级到下一渠道</li>
+                                </ul>
+                            </div>
+
+                            <!-- 测试推送 -->
+                            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                                <div style="font-size: 16px; font-weight: 600; color: var(--text-color); margin-bottom: 12px;">
+                                    <i class="ri-send-plane-line"></i> 测试推送
+                                </div>
+                                <div style="display: flex; gap: 12px;">
+                                    <button class="btn btn-secondary" @click="testPushPlus" :disabled="!configValues['pushplus.enabled'] || !configValues['pushplus.token']">
+                                        <i class="ri-wechat-line"></i> 测试PushPlus
+                                    </button>
+                                    <button class="btn btn-secondary" @click="testServerChan" :disabled="!configValues['serverchan.enabled'] || !configValues['serverchan.sendkey']">
+                                        <i class="ri-server-line"></i> 测试Server酱
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="btn-group">
+                                <button class="btn btn-secondary" @click="loadConfigs">重置</button>
+                                <button class="btn btn-primary" @click="saveConfigs" :disabled="saving">
+                                    {{ saving ? '保存中...' : '保存配置' }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        createApp({
+            data() {
+                return {
+                    menus: [],
+                    adminInfo: {},
+                    activeTab: 'system',
+                    loading: true,
+                    saving: false,
+                    allConfigs: {},
+                    configValues: {},
+                    searchText: '',
+                    filteredPageTexts: [],
+                    paymentMethods: [
+                        { id: 'alipay', name: '支付宝支付' },
+                        { id: 'wechat', name: '微信支付' },
+                        { id: 'wechat_zs', name: '微信赞赏码' },
+                        { id: 'alipay_dmf', name: '支付宝当面付' }
+                    ],
+                    message: { show: false, type: 'success', text: '' },
+                    testEmail: '',
+                    testingEmail: false,
+                    uploadingQrCode: {},
+                    // 二维码管理
+                    qrCodes: [],
+                    qrcodeDragging: false,
+                    qrcodeFilterPayType: '',
+                    qrcodeFilterType: '',
+                    qrcodeNextId: 1,
+                    selectedQrCodes: [],
+                    batchSettings: { payType: 'alipay', qrType: 'fixed', amount: 10 },
+                    batchPayType: '',
+                    batchQrType: '',
+                    batchAmount: null,
+                    showCropModal: false,
+                    cropArea: { x: 50, y: 50, width: 200, height: 200 },
+                    cropImage: null,
+                    cropScale: 1,
+                    isDragging: false,
+                    isResizing: false,
+                    dragStart: { x: 0, y: 0 },
+                    // 金额映射
+                    amountMappings: [],
+                    showAddMappingForm: false,
+                    newMapping: { payType: 'alipay', chargeAmount: 10, actualAmount: '', priority: 1 }
+                };
+            },
+            computed: {
+                filteredQrCodes() {
+                    const filtered = this.qrCodes.filter(qr => {
+                        if (this.qrcodeFilterPayType && qr.payType !== this.qrcodeFilterPayType) return false;
+                        if (this.qrcodeFilterType && qr.qrType !== this.qrcodeFilterType) return false;
+                        return true;
+                    });
+                    // 未保存的排在前面
+                    return filtered.sort((a, b) => {
+                        if (a.saved === b.saved) return b.id - a.id; // 同类型按ID倒序
+                        return a.saved ? 1 : -1; // 未保存的在前
+                    });
+                },
+                isAllSelected() {
+                    return this.filteredQrCodes.length > 0 &&
+                           this.filteredQrCodes.every(qr => this.selectedQrCodes.includes(qr.id));
+                },
+                qrcodeStats() {
+                    const stats = {};
+                    this.qrCodes.filter(qr => qr.qrType === 'fixed' && qr.amount > 0).forEach(qr => {
+                        const key = `${qr.payType}_${qr.amount}`;
+                        if (!stats[key]) {
+                            stats[key] = {
+                                key: key,
+                                payType: qr.payType,
+                                amount: qr.amount,
+                                count: 0,
+                                qrNums: []
+                            };
+                        }
+                        stats[key].count++;
+                        stats[key].qrNums.push(qr.qrNum);
+                    });
+                    return Object.values(stats).sort((a, b) => {
+                        if (a.payType !== b.payType) return a.payType.localeCompare(b.payType);
+                        return a.amount - b.amount;
+                    });
+                },
+                availableAmountsForMapping() {
+                    return this.qrcodeStats
+                        .filter(stat => stat.payType === this.newMapping.payType)
+                        .map(stat => stat.amount);
+                },
+                groupedMappings() {
+                    const groups = {};
+                    this.amountMappings.forEach(mapping => {
+                        const key = `${mapping.payType === 'alipay' ? '支付宝' : '微信'}`;
+                        if (!groups[key]) groups[key] = [];
+                        groups[key].push(mapping);
+                    });
+                    Object.keys(groups).forEach(key => {
+                        groups[key].sort((a, b) => {
+                            if (a.chargeAmount !== b.chargeAmount) return a.chargeAmount - b.chargeAmount;
+                            return a.priority - b.priority;
+                        });
+                    });
+                    return groups;
+                },
+                groupedPageTexts() {
+                    const pageTexts = this.searchText ? this.filteredPageTexts : (this.allConfigs['page_text'] || []);
+                    const groups = {};
+
+                    pageTexts.forEach(config => {
+                        const key = config.configKey;
+                        let pageName = '其他';
+                        
+                        if (key.startsWith('page.common.')) pageName = '通用文案';
+                        else if (key.startsWith('page.index.')) pageName = '首页';
+                        else if (key.startsWith('page.payment.')) pageName = '支付页面';
+                        else if (key.startsWith('page.recharge.')) pageName = '充值页面';
+                        else if (key.startsWith('page.help.')) pageName = '帮助中心';
+                        else if (key.startsWith('page.admin.')) pageName = '后台管理';
+                        else if (key.startsWith('page.order.')) pageName = '订单状态';
+                        else if (key.startsWith('page.success.')) pageName = '成功页面';
+                        else if (key.startsWith('page.error.')) pageName = '错误页面';
+                        
+                        if (!groups[pageName]) groups[pageName] = [];
+                        groups[pageName].push(config);
+                    });
+                    
+                    return groups;
+                }
+            },
+            async mounted() {
+                await this.checkAuth();
+                await this.loadMenus();
+                await this.loadAdminInfo();
+                await this.loadConfigs();
+            },
+            methods: {
+                async checkAuth() {
+                    try {
+                        const response = await fetch('/admin/api/info');
+                        const result = await response.json();
+                        if (result.code !== 200) {
+                            window.location.href = '/admin/login.html';
+                        }
+                    } catch (error) {
+                        window.location.href = '/admin/login.html';
+                    }
+                },
+                
+                async loadMenus() {
+                    const stored = localStorage.getItem('adminMenus');
+                    if (stored) {
+                        this.menus = JSON.parse(stored);
+                    }
+                },
+                
+                async loadAdminInfo() {
+                    const stored = localStorage.getItem('adminInfo');
+                    if (stored) {
+                        this.adminInfo = JSON.parse(stored);
+                    }
+                },
+                
+                async loadConfigs() {
+                    try {
+                        this.loading = true;
+                        const response = await fetch('/admin/api/config/all');
+                        const result = await response.json();
+                        
+                        if (result.code === 200) {
+                            this.allConfigs = result.data;
+                            
+                            // 初始化配置值
+                            this.configValues = {};
+                            for (const group in this.allConfigs) {
+                                for (const config of this.allConfigs[group]) {
+                                    this.configValues[config.configKey] = config.configValue || '';
+                                }
+                            }
+                            
+                            // 初始化页面文案过滤
+                            this.filterPageTexts();
+                        } else {
+                            this.showMessage('error', '加载配置失败: ' + (result.msg || '未知错误'));
+                        }
+                    } catch (error) {
+                        this.showMessage('error', '加载配置失败: ' + error.message);
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                
+                async saveConfigs() {
+                    try {
+                        this.saving = true;
+                        const response = await fetch('/admin/api/config/save', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.configValues)
+                        });
+                        
+                        const result = await response.json();
+                        if (result.code === 200) {
+                            this.showMessage('success', '配置保存成功！');
+                            await this.loadConfigs();
+                        } else {
+                            this.showMessage('error', '保存失败: ' + (result.msg || '未知错误'));
+                        }
+                    } catch (error) {
+                        this.showMessage('error', '保存失败: ' + error.message);
+                    } finally {
+                        this.saving = false;
+                    }
+                },
+                
+                getConfigsByGroup(group) {
+                    return this.allConfigs[group] || [];
+                },
+                
+                filterPageTexts() {
+                    const pageTexts = this.allConfigs['page_text'] || [];
+                    if (!this.searchText) {
+                        this.filteredPageTexts = [];
+                    } else {
+                        const search = this.searchText.toLowerCase();
+                        this.filteredPageTexts = pageTexts.filter(config => 
+                            config.description.toLowerCase().includes(search) ||
+                            config.configKey.toLowerCase().includes(search) ||
+                            (config.configValue && config.configValue.toLowerCase().includes(search))
+                        );
+                    }
+                },
+
+                onEmailProviderChange() {
+                    const provider = this.configValues['email.provider'];
+
+                    // 预设配置
+                    const presets = {
+                        qq: {
+                            'email.smtp_host': 'smtp.qq.com',
+                            'email.smtp_port': '465',
+                            'email.protocol': 'smtps'
+                        },
+                        '163': {
+                            'email.smtp_host': 'smtp.163.com',
+                            'email.smtp_port': '465',
+                            'email.protocol': 'smtps'
+                        },
+                        gmail: {
+                            'email.smtp_host': 'smtp.gmail.com',
+                            'email.smtp_port': '587',
+                            'email.protocol': 'smtp'
+                        },
+                        outlook: {
+                            'email.smtp_host': 'smtp-mail.outlook.com',
+                            'email.smtp_port': '587',
+                            'email.protocol': 'smtp'
+                        }
+                    };
+
+                    // 应用预设配置
+                    if (presets[provider]) {
+                        Object.assign(this.configValues, presets[provider]);
+                    }
+                },
+
+                showMessage(type, text) {
+                    this.message = { show: true, type, text };
+                    setTimeout(() => {
+                        this.message.show = false;
+                    }, 5000);
+                },
+
+                async sendTestEmail() {
+                    if (!this.testEmail || !this.testEmail.trim()) {
+                        this.showMessage('error', '请输入测试邮箱地址');
+                        return;
+                    }
+
+                    // 验证邮箱格式
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(this.testEmail)) {
+                        this.showMessage('error', '邮箱格式不正确');
+                        return;
+                    }
+
+                    try {
+                        this.testingEmail = true;
+                        const response = await fetch('/admin/api/email/test', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ testEmail: this.testEmail })
+                        });
+
+                        const result = await response.json();
+                        if (result.code === 200) {
+                            this.showMessage('success', '测试邮件已发送！请检查收件箱（可能在垃圾邮件中）');
+                        } else {
+                            this.showMessage('error', '发送失败: ' + (result.msg || '未知错误'));
+                        }
+                    } catch (error) {
+                        this.showMessage('error', '发送失败: ' + error.message);
+                    } finally {
+                        this.testingEmail = false;
+                    }
+                },
+
+                async handleQrCodeUpload(event, configKey) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+
+                    // 验证文件类型
+                    if (!file.type.startsWith('image/')) {
+                        this.showMessage('error', '只能上传图片文件');
+                        return;
+                    }
+
+                    // 验证文件大小 (2MB)
+                    if (file.size > 2 * 1024 * 1024) {
+                        this.showMessage('error', '图片大小不能超过 2MB');
+                        return;
+                    }
+
+                    try {
+                        // Vue 3 直接赋值即可
+                        this.uploadingQrCode[configKey] = true;
+
+                        // 构建 FormData
+                        const formData = new FormData();
+                        formData.append('file', file);
+
+                        // 从 configKey 提取类型 (如 alipay.custom.qr.url -> alipay)
+                        const type = configKey.split('.')[0];
+                        formData.append('type', type);
+
+                        // 上传图片
+                        const response = await fetch('/admin/api/config/upload/qrcode', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const result = await response.json();
+                        if (result.code === 200) {
+                            // 更新配置值为返回的 URL
+                            this.configValues[configKey] = result.data;
+                            this.showMessage('success', '图片上传成功！');
+                        } else {
+                            this.showMessage('error', '上传失败: ' + (result.msg || '未知错误'));
+                        }
+                    } catch (error) {
+                        this.showMessage('error', '上传失败: ' + error.message);
+                    } finally {
+                        this.uploadingQrCode[configKey] = false;
+                        // 清空文件选择
+                        event.target.value = '';
+                    }
+                },
+
+                // 二维码管理方法
+                async loadQrCodes() {
+                    try {
+                        const response = await fetch('/admin/api/qrcode/list');
+                        const result = await response.json();
+                        if (result.code === 200) {
+                            this.qrCodes = result.data.map(qr => ({
+                                id: qr.id,
+                                fileName: qr.fileName,
+                                payType: qr.payType,
+                                qrType: qr.amount > 0 ? 'fixed' : 'normal',
+                                amount: qr.amount || 0,
+                                qrNum: qr.qrNum || 1,
+                                preview: qr.filePath.startsWith('http') ? qr.filePath : (window.location.origin + qr.filePath),
+                                saved: true
+                            }));
+                            this.qrcodeNextId = Math.max(...this.qrCodes.map(q => q.id), 0) + 1;
+                        }
+                    } catch (error) {
+                        console.error('加载二维码列表失败:', error);
+                    }
+                },
+                handleQrcodeSelect(e) {
+                    const files = Array.from(e.target.files);
+                    this.processQrcodeFiles(files);
+                    e.target.value = '';
+                },
+                handleQrcodeDrop(e) {
+                    this.qrcodeDragging = false;
+                    const files = Array.from(e.dataTransfer.files);
+                    this.processQrcodeFiles(files);
+                },
+                processQrcodeFiles(files) {
+                    const newIds = [];
+                    files.forEach(file => {
+                        if (!file.type.startsWith('image/')) return;
+                        const reader = new FileReader();
+                        const newId = this.qrcodeNextId++;
+                        newIds.push(newId);
+                        reader.onload = (e) => {
+                            this.qrCodes.push({
+                                id: newId,
+                                fileName: file.name,
+                                payType: this.batchSettings.payType,
+                                qrType: this.batchSettings.qrType,
+                                amount: this.batchSettings.qrType === 'fixed' ? this.batchSettings.amount : 0,
+                                qrNum: 1,
+                                preview: e.target.result,
+                                file: file,
+                                saved: false
+                            });
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                    // 自动选中新上传的图片
+                    setTimeout(() => {
+                        this.selectedQrCodes = [...new Set([...this.selectedQrCodes, ...newIds])];
+                    }, 100);
+                },
+                async batchSaveQrCodes() {
+                    const unsaved = this.qrCodes.filter(q => !q.saved);
+                    if (unsaved.length === 0) return;
+
+                    const formData = new FormData();
+                    unsaved.forEach(qr => formData.append('files', qr.file));
+                    formData.append('payType', this.batchSettings.payType);
+                    formData.append('qrType', this.batchSettings.qrType);
+                    if (this.batchSettings.qrType === 'fixed') {
+                        formData.append('amount', this.batchSettings.amount);
+                    }
+
+                    try {
+                        const response = await fetch('/admin/api/qrcode/upload/batch', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        const result = await response.json();
+                        if (result.code === 200) {
+                            this.showMessage('success', `批量保存成功：${unsaved.length} 个`);
+                            await this.loadQrCodes();
+                            this.selectedQrCodes = [];
+                        } else {
+                            this.showMessage('error', '批量保存失败: ' + result.message);
+                        }
+                    } catch (error) {
+                        console.error('批量保存失败:', error);
+                        this.showMessage('error', '批量保存失败，请重试');
+                    }
+                },
+                batchDeleteQrCodes() {
+                    if (!confirm('确定要删除所有未保存的二维码吗？')) return;
+                    this.qrCodes = this.qrCodes.filter(q => q.saved);
+                    this.selectedQrCodes = [];
+                },
+                openCropModal() {
+                    if (this.selectedQrCodes.length === 0) return;
+                    const firstSelected = this.qrCodes.find(q => q.id === this.selectedQrCodes[0]);
+                    if (!firstSelected) return;
+
+                    this.showCropModal = true;
+                    this.$nextTick(() => {
+                        const canvas = this.$refs.cropCanvas;
+                        const ctx = canvas.getContext('2d');
+                        const img = new Image();
+                        img.onload = () => {
+                            // 限制最大显示尺寸为 600x600
+                            const maxSize = 600;
+                            let displayWidth = img.width;
+                            let displayHeight = img.height;
+
+                            if (displayWidth > maxSize || displayHeight > maxSize) {
+                                const ratio = Math.min(maxSize / displayWidth, maxSize / displayHeight);
+                                displayWidth = Math.floor(displayWidth * ratio);
+                                displayHeight = Math.floor(displayHeight * ratio);
+                            }
+
+                            // 保存缩放比例，用于裁剪时转换坐标
+                            this.cropScale = displayWidth / img.width;
+
+                            canvas.width = displayWidth;
+                            canvas.height = displayHeight;
+                            ctx.drawImage(img, 0, 0, displayWidth, displayHeight);
+                            this.cropImage = img;
+                            this.cropArea = {
+                                x: Math.floor(displayWidth * 0.1),
+                                y: Math.floor(displayHeight * 0.1),
+                                width: Math.floor(displayWidth * 0.8),
+                                height: Math.floor(displayHeight * 0.8)
+                            };
+                        };
+                        img.src = firstSelected.preview;
+                    });
+                },
+                async applyCropToSelected() {
+                    const selectedQrs = this.qrCodes.filter(q => this.selectedQrCodes.includes(q.id));
+
+                    const cropPromises = selectedQrs.map(qr => {
+                        return new Promise((resolve) => {
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            const img = new Image();
+                            img.onload = () => {
+                                // 将显示坐标转换为原图坐标
+                                const scale = 1 / this.cropScale;
+                                const srcX = Math.floor(this.cropArea.x * scale);
+                                const srcY = Math.floor(this.cropArea.y * scale);
+                                const srcWidth = Math.floor(this.cropArea.width * scale);
+                                const srcHeight = Math.floor(this.cropArea.height * scale);
+
+                                canvas.width = srcWidth;
+                                canvas.height = srcHeight;
+                                ctx.drawImage(img,
+                                    srcX, srcY, srcWidth, srcHeight,
+                                    0, 0, srcWidth, srcHeight
+                                );
+                                canvas.toBlob(blob => {
+                                    qr.file = new File([blob], qr.fileName, { type: 'image/png' });
+                                    qr.preview = canvas.toDataURL();
+                                    resolve();
+                                }, 'image/png');
+                            };
+                            img.src = qr.preview;
+                        });
+                    });
+
+                    await Promise.all(cropPromises);
+                    this.showCropModal = false;
+                    this.showMessage('success', `已应用裁剪到 ${selectedQrs.length} 个二维码`);
+                },
+                handleQrTypeChange(qr) {
+                    if (qr.qrType === 'normal') {
+                        qr.amount = 0;
+                        qr.qrNum = 1;
+                    } else if (qr.qrType === 'fixed') {
+                        qr.amount = 10;
+                        qr.qrNum = 1;
+                    }
+                },
+                async saveQrCode(qr) {
+                    if (!qr.file) {
+                        this.showMessage('error', '该二维码已保存');
+                        return;
+                    }
+                    if (qr.qrType === 'fixed' && (!qr.amount || qr.amount <= 0)) {
+                        this.showMessage('error', '固定金额类型必须设置金额');
+                        return;
+                    }
+
+                    // 自动生成唯一编号
+                    if (qr.qrType === 'fixed') {
+                        const existingQrs = this.qrCodes.filter(q =>
+                            q.payType === qr.payType &&
+                            q.qrType === 'fixed' &&
+                            q.amount === qr.amount &&
+                            q.saved
+                        );
+                        const maxNum = existingQrs.length > 0 ? Math.max(...existingQrs.map(q => q.qrNum || 0)) : 0;
+                        qr.qrNum = maxNum + 1;
+                    }
+
+                    const formData = new FormData();
+                    formData.append('file', qr.file);
+                    formData.append('payType', qr.payType);
+                    formData.append('amount', qr.qrType === 'normal' ? 0 : qr.amount);
+                    formData.append('qrNum', qr.qrType === 'normal' ? 1 : qr.qrNum);
+                    try {
+                        const response = await fetch('/admin/api/qrcode/upload', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        const result = await response.json();
+                        if (result.code === 200) {
+                            qr.saved = true;
+                            qr.id = result.data.id;
+                            qr.preview = result.data.filePath;
+                            delete qr.file;
+                            this.showMessage('success', '保存成功');
+                        } else {
+                            this.showMessage('error', '保存失败: ' + result.message);
+                        }
+                    } catch (error) {
+                        console.error('保存二维码失败:', error);
+                        this.showMessage('error', '保存失败，请重试');
+                    }
+                },
+                async deleteQrCode(qr) {
+                    if (!confirm('确定要删除这个二维码吗？')) return;
+                    if (qr.saved) {
+                        try {
+                            const response = await fetch(`/admin/api/qrcode/delete/${qr.id}`, {
+                                method: 'DELETE'
+                            });
+                            const result = await response.json();
+                            if (result.code === 200) {
+                                this.qrCodes = this.qrCodes.filter(q => q.id !== qr.id);
+                                this.showMessage('success', '删除成功');
+                            } else {
+                                this.showMessage('error', '删除失败: ' + result.message);
+                            }
+                        } catch (error) {
+                            console.error('删除二维码失败:', error);
+                            this.showMessage('error', '删除失败，请重试');
+                        }
+                    } else {
+                        this.qrCodes = this.qrCodes.filter(q => q.id !== qr.id);
+                    }
+                },
+                toggleSelectAll() {
+                    if (this.isAllSelected) {
+                        // 取消全选：移除所有当前筛选结果的 ID
+                        const filteredIds = this.filteredQrCodes.map(qr => qr.id);
+                        this.selectedQrCodes = this.selectedQrCodes.filter(id => !filteredIds.includes(id));
+                    } else {
+                        // 全选：添加所有当前筛选结果的 ID
+                        const filteredIds = this.filteredQrCodes.map(qr => qr.id);
+                        this.selectedQrCodes = [...new Set([...this.selectedQrCodes, ...filteredIds])];
+                    }
+                },
+                applyBatchPayType() {
+                    if (!this.batchPayType) return;
+                    this.selectedQrCodes.forEach(id => {
+                        const qr = this.qrCodes.find(q => q.id === id);
+                        if (qr && !qr.saved) {
+                            qr.payType = this.batchPayType;
+                        }
+                    });
+                    this.showMessage('success', `已设置 ${this.selectedQrCodes.length} 个二维码的支付方式`);
+                    this.batchPayType = '';
+                },
+                applyBatchQrType() {
+                    if (!this.batchQrType) return;
+                    this.selectedQrCodes.forEach(id => {
+                        const qr = this.qrCodes.find(q => q.id === id);
+                        if (qr && !qr.saved) {
+                            qr.qrType = this.batchQrType;
+                            this.handleQrTypeChange(qr);
+                        }
+                    });
+                    this.showMessage('success', `已设置 ${this.selectedQrCodes.length} 个二维码的类型`);
+                    this.batchQrType = '';
+                },
+                applyBatchAmount() {
+                    if (!this.batchAmount || this.batchAmount <= 0) return;
+                    this.selectedQrCodes.forEach(id => {
+                        const qr = this.qrCodes.find(q => q.id === id);
+                        if (qr && !qr.saved && qr.qrType === 'fixed') {
+                            qr.amount = this.batchAmount;
+                        }
+                    });
+                    this.showMessage('success', `已设置 ${this.selectedQrCodes.length} 个二维码的金额`);
+                    this.batchAmount = null;
+                },
+                async saveAllQrCodes() {
+                    const unsaved = this.qrCodes.filter(q => !q.saved);
+                    if (unsaved.length === 0) {
+                        this.showMessage('error', '没有需要保存的二维码');
+                        return;
+                    }
+
+                    let successCount = 0;
+                    let failCount = 0;
+
+                    for (const qr of unsaved) {
+                        if (qr.qrType === 'fixed' && (!qr.amount || qr.amount <= 0)) {
+                            failCount++;
+                            continue;
+                        }
+
+                        // 自动生成唯一编号
+                        if (qr.qrType === 'fixed') {
+                            const existingQrs = this.qrCodes.filter(q =>
+                                q.payType === qr.payType &&
+                                q.qrType === 'fixed' &&
+                                q.amount === qr.amount &&
+                                q.saved
+                            );
+                            const maxNum = existingQrs.length > 0 ? Math.max(...existingQrs.map(q => q.qrNum || 0)) : 0;
+                            qr.qrNum = maxNum + 1;
+                        }
+
+                        const formData = new FormData();
+                        formData.append('file', qr.file);
+                        formData.append('payType', qr.payType);
+                        formData.append('amount', qr.qrType === 'normal' ? 0 : qr.amount);
+                        formData.append('qrNum', qr.qrType === 'normal' ? 1 : qr.qrNum);
+
+                        try {
+                            const response = await fetch('/admin/api/qrcode/upload', {
+                                method: 'POST',
+                                body: formData
+                            });
+                            const result = await response.json();
+                            if (result.code === 200) {
+                                successCount++;
+                            } else {
+                                failCount++;
+                            }
+                        } catch (error) {
+                            console.error('保存二维码失败:', error);
+                            failCount++;
+                        }
+                    }
+
+                    if (successCount > 0) {
+                        this.showMessage('success', `成功保存 ${successCount} 个二维码${failCount > 0 ? `，失败 ${failCount} 个` : ''}`);
+                        // 重新加载二维码列表以显示正确的图片
+                        await this.loadQrCodes();
+                    } else {
+                        this.showMessage('error', '保存失败');
+                    }
+                },
+                startDrag(e) {
+                    e.preventDefault();
+                    this.isDragging = true;
+                    const rect = this.$refs.cropCanvas.getBoundingClientRect();
+                    this.dragStart = {
+                        x: e.clientX - rect.left - this.cropArea.x,
+                        y: e.clientY - rect.top - this.cropArea.y
+                    };
+                    document.addEventListener('mousemove', this.onDrag);
+                    document.addEventListener('mouseup', this.stopDrag);
+                },
+                onDrag(e) {
+                    if (!this.isDragging) return;
+                    e.preventDefault();
+                    const canvas = this.$refs.cropCanvas;
+                    if (!canvas) return;
+
+                    const rect = canvas.getBoundingClientRect();
+                    let newX = e.clientX - rect.left - this.dragStart.x;
+                    let newY = e.clientY - rect.top - this.dragStart.y;
+
+                    newX = Math.max(0, Math.min(newX, canvas.width - this.cropArea.width));
+                    newY = Math.max(0, Math.min(newY, canvas.height - this.cropArea.height));
+
+                    this.cropArea.x = Math.round(newX);
+                    this.cropArea.y = Math.round(newY);
+                },
+                stopDrag() {
+                    this.isDragging = false;
+                    document.removeEventListener('mousemove', this.onDrag);
+                    document.removeEventListener('mouseup', this.stopDrag);
+                },
+                startResize(e) {
+                    this.isResizing = true;
+                    this.dragStart = {
+                        x: e.clientX,
+                        y: e.clientY,
+                        width: this.cropArea.width,
+                        height: this.cropArea.height
+                    };
+                    document.addEventListener('mousemove', this.onResize);
+                    document.addEventListener('mouseup', this.stopResize);
+                },
+                onResize(e) {
+                    if (!this.isResizing) return;
+                    const canvas = this.$refs.cropCanvas;
+                    if (!canvas) return;
+
+                    const rect = canvas.getBoundingClientRect();
+                    const deltaX = e.clientX - this.dragStart.x;
+                    const deltaY = e.clientY - this.dragStart.y;
+
+                    let newWidth = this.dragStart.width + deltaX;
+                    let newHeight = this.dragStart.height + deltaY;
+
+                    newWidth = Math.max(50, Math.min(newWidth, canvas.width - this.cropArea.x));
+                    newHeight = Math.max(50, Math.min(newHeight, canvas.height - this.cropArea.y));
+
+                    this.cropArea.width = newWidth;
+                    this.cropArea.height = newHeight;
+                },
+                stopResize() {
+                    this.isResizing = false;
+                    document.removeEventListener('mousemove', this.onResize);
+                    document.removeEventListener('mouseup', this.stopResize);
+                },
+
+                // 金额映射方法
+                async loadAmountMappings() {
+                    try {
+                        const response = await fetch('/admin/api/amount-mapping/list');
+                        const result = await response.json();
+                        if (result.code === 200) {
+                            this.amountMappings = result.data;
+                        }
+                    } catch (error) {
+                        console.error('加载金额映射失败:', error);
+                    }
+                },
+                resetNewMapping() {
+                    this.newMapping = { payType: 'alipay', chargeAmount: 10, actualAmount: '', priority: 1 };
+                },
+                updateAvailableAmounts() {
+                    this.newMapping.actualAmount = '';
+                },
+                hasQrCode(payType, amount) {
+                    return this.qrCodes.some(qr =>
+                        qr.qrType === 'fixed' &&
+                        qr.payType === payType &&
+                        qr.amount === amount
+                    );
+                },
+                getQrCodeCount(payType, amount) {
+                    return this.qrCodes.filter(qr =>
+                        qr.qrType === 'fixed' &&
+                        qr.payType === payType &&
+                        qr.amount === amount
+                    ).length;
+                },
+                async addAmountMapping() {
+                    if (!this.newMapping.chargeAmount || !this.newMapping.actualAmount) {
+                        this.showMessage('error', '请填写完整信息');
+                        return;
+                    }
+                    if (!this.hasQrCode(this.newMapping.payType, this.newMapping.actualAmount)) {
+                        this.showMessage('error', '所选金额没有对应的二维码，请先上传');
+                        return;
+                    }
+                    try {
+                        const response = await fetch('/admin/api/amount-mapping/add', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.newMapping)
+                        });
+                        const result = await response.json();
+                        if (result.code === 200) {
+                            this.amountMappings.push(result.data);
+                            this.showAddMappingForm = false;
+                            this.resetNewMapping();
+                            this.showMessage('success', '添加成功');
+                        } else {
+                            this.showMessage('error', '添加失败: ' + result.message);
+                        }
+                    } catch (error) {
+                        console.error('添加金额映射失败:', error);
+                        this.showMessage('error', '添加失败，请重试');
+                    }
+                },
+                async deleteAmountMapping(id) {
+                    if (!confirm('确定要删除这个映射吗？')) return;
+                    try {
+                        const response = await fetch(`/admin/api/amount-mapping/delete/${id}`, {
+                            method: 'DELETE'
+                        });
+                        const result = await response.json();
+                        if (result.code === 200) {
+                            this.amountMappings = this.amountMappings.filter(m => m.id !== id);
+                            this.showMessage('success', '删除成功');
+                        } else {
+                            this.showMessage('error', '删除失败: ' + result.message);
+                        }
+                    } catch (error) {
+                        console.error('删除金额映射失败:', error);
+                        this.showMessage('error', '删除失败，请重试');
+                    }
+                },
+                // 推送通知测试方法
+                async testPushPlus() {
+                    try {
+                        this.showMessage("success", "正在测试PushPlus推送...");
+                        const response = await fetch("/admin/api/notification/test/pushplus", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                token: this.configValues["pushplus.token"]
+                            })
+                        });
+                        const result = await response.json();
+                        if (result.code === 200) {
+                            this.showMessage("success", "PushPlus测试推送成功，请查看微信");
+                        } else {
+                            this.showMessage("error", "测试失败: " + result.message);
+                        }
+                    } catch (error) {
+                        console.error("测试PushPlus失败:", error);
+                        this.showMessage("error", "测试失败，请检查配置");
+                    }
+                },
+                async testServerChan() {
+                    try {
+                        this.showMessage("success", "正在测试Server酱推送...");
+                        const response = await fetch("/admin/api/notification/test/serverchan", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                sendkey: this.configValues["serverchan.sendkey"]
+                            })
+                        });
+                        const result = await response.json();
+                        if (result.code === 200) {
+                            this.showMessage("success", "Server酱测试推送成功，请查看微信");
+                        } else {
+                            this.showMessage("error", "测试失败: " + result.message);
+                        }
+                    } catch (error) {
+                        console.error("测试Server酱失败:", error);
+                        this.showMessage("error", "测试失败，请检查配置");
+                    }
+                },
+
+
+                async handleLogout() {
+                    try {
+                        await fetch('/admin/api/logout', { method: 'POST' });
+                        localStorage.removeItem('adminInfo');
+                        localStorage.removeItem('adminMenus');
+                        localStorage.removeItem('adminToken');
+                        window.location.href = '/admin/login.html';
+                    } catch (error) {
+                        console.error('退出登录失败:', error);
+                    }
+                }
+            }
+        }).mount('#app');
+    </script>
+    <style>
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</body>
+</html>

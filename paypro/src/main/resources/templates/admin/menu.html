@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>菜单管理 - PayPro</title>
+    <script src="/js/vue.global.min.js"></script>
+    <link href="/css/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css">
+    <style>
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-right: var(--glass-border);
+            color: var(--text-color);
+            padding: 24px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar:hover {
+            border-right-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .logo {
+            padding: 0 30px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 24px;
+        }
+        
+        .logo h1 {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+        
+        .menu {
+            list-style: none;
+        }
+        
+        .menu-item {
+            margin: 8px 16px;
+        }
+        
+        .menu-link {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 20px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-size: 15px;
+            font-weight: 500;
+        }
+        
+        .menu-link:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+        }
+        
+        .menu-link.active {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+            color: var(--text-color);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+        
+        .menu-link i {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 24px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        
+        .header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .user-details {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .user-name {
+            font-weight: 500;
+            color: var(--text-color);
+        }
+        
+        .user-role {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        
+        .logout-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+        }
+        
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: var(--glass-border);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            margin-bottom: 24px;
+        }
+        
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .card-header {
+            padding: 24px 28px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-header h3 {
+            font-size: 16px;
+            color: var(--text-color);
+            font-weight: 600;
+        }
+        
+        .card-body {
+            padding: 28px;
+        }
+        
+        .search-form {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .search-input {
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-color);
+            font-size: 14px;
+            min-width: 200px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .btn-ghost {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+        }
+        
+        .btn-ghost:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th,
+        .table td {
+            padding: 14px 18px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .table th {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .table td {
+            color: var(--text-color);
+        }
+        
+        .table tbody tr {
+            transition: all 0.3s ease;
+        }
+        
+        .table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-badge.active {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+        
+        .status-badge.inactive {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+        
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .action-btn.edit {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+        
+        .action-btn.delete {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+        
+        .action-btn:hover {
+            opacity: 0.8;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 24px;
+        }
+        
+        .pagination button {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .pagination button:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-color);
+        }
+        
+        .pagination button.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: var(--glass-border);
+            border-radius: 20px;
+            padding: 32px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-color);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+        
+        .menu-tree-card {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .menu-tree-node {
+            margin: 8px 0;
+        }
+        
+        .menu-tree-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .menu-tree-content:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .menu-tree-content.active {
+            background: rgba(99, 102, 241, 0.1);
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .menu-tree-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(99, 102, 241, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+        }
+        
+        .menu-tree-children {
+            margin-left: 24px;
+            margin-top: 8px;
+        }
+        
+        .icon-preview {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary-color);
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 1000;
+            }
+            
+            .main {
+                margin-left: 0;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+            
+            .user-info {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .search-form {
+                flex-direction: column;
+            }
+            
+            .search-input {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="logo">
+                <h1><i class="ri-dashboard-line"></i> PayPro</h1>
+                <p>后台管理系统</p>
+            </div>
+            
+            <ul class="menu">
+                <li class="menu-item" v-for="menu in menus" :key="menu.id">
+                    <a :href="menu.path" class="menu-link" :class="{active: menu.path.includes('menu.html')}">
+                        <i :class="menu.icon"></i>
+                        <span>{{ menu.name }}</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+        
+        <main class="main">
+            <header class="header">
+                <h2>菜单管理</h2>
+                <div class="user-info">
+                    <div class="user-avatar">
+                        {{ adminInfo.nickname ? adminInfo.nickname.charAt(0) : 'A' }}
+                    </div>
+                    <div class="user-details">
+                        <div class="user-name">{{ adminInfo.nickname || adminInfo.username || '管理员' }}</div>
+                        <div class="user-role">系统管理员</div>
+                    </div>
+                    <button class="logout-btn" @click="handleLogout">
+                        <i class="ri-logout-box-line"></i> 退出
+                    </button>
+                </div>
+            </header>
+            
+            <div class="content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>菜单树结构</h3>
+                        <button class="btn btn-success" @click="showAddModal">
+                            <i class="ri-add-line"></i> 创建菜单
+                        </button>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="menu-tree-card">
+                            <div v-for="menu in menuTree" :key="menu.id" class="menu-tree-node">
+                                <div class="menu-tree-content" @click="selectMenu(menu)">
+                                    <div class="menu-tree-icon">
+                                        <i :class="menu.icon || 'ri-menu-line'"></i>
+                                    </div>
+                                    <span>{{ menu.name }}</span>
+                                </div>
+                                <div v-if="menu.children && menu.children.length > 0" class="menu-tree-children">
+                                    <div v-for="child in menu.children" :key="child.id" class="menu-tree-node">
+                                        <div class="menu-tree-content" @click="selectMenu(child)">
+                                            <div class="menu-tree-icon">
+                                                <i :class="child.icon || 'ri-menu-line'"></i>
+                                            </div>
+                                            <span>{{ child.name }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>菜单列表</h3>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="search-form" style="margin-bottom: 20px;">
+                            <input type="text" class="search-input" v-model="searchForm.keyword" placeholder="搜索菜单名称" @keyup.enter="loadMenus">
+                            <button class="btn btn-primary" @click="loadMenus">
+                                <i class="ri-search-line"></i> 搜索
+                            </button>
+                        </div>
+                        
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>菜单名称</th>
+                                    <th>路径</th>
+                                    <th>图标</th>
+                                    <th>排序</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="menu in menuList" :key="menu.id">
+                                    <td>{{ menu.name }}</td>
+                                    <td>{{ menu.path || '-' }}</td>
+                                    <td>
+                                        <span v-if="menu.icon" class="icon-preview">
+                                            <i :class="menu.icon"></i>
+                                        </span>
+                                        <span v-else>-</span>
+                                    </td>
+                                    <td>{{ menu.sort }}</td>
+                                    <td>
+                                        <span class="status-badge" :class="menu.visible === 1 ? 'active' : 'inactive'">
+                                            {{ menu.visible === 1 ? '显示' : '隐藏' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="action-btns">
+                                            <button class="action-btn edit" @click="showEditModal(menu)">
+                                                <i class="ri-edit-line"></i> 编辑
+                                            </button>
+                                            <button class="action-btn delete" @click="deleteMenu(menu)">
+                                                <i class="ri-delete-bin-line"></i> 删除
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <div class="pagination" v-if="totalPages > 1">
+                            <button :disabled="page === 1" @click="page--; loadMenus()">上一页</button>
+                            <button v-for="p in totalPages" :key="p" :class="{active: page === p}" @click="page = p; loadMenus()">{{ p }}</button>
+                            <button :disabled="page === totalPages" @click="page++; loadMenus()">下一页</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- 创建/编辑菜单模态框 -->
+    <div class="modal" v-if="showModal" @click="showModal = false">
+        <div class="modal-content" @click.stop>
+            <div class="modal-header">
+                <h3>{{ isEdit ? '编辑菜单' : '创建菜单' }}</h3>
+                <button class="close-btn" @click="showModal = false">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+            <form @submit.prevent="submitMenu">
+                <div class="form-group">
+                    <label>菜单名称</label>
+                    <input type="text" v-model="menuForm.name" required>
+                </div>
+                <div class="form-group">
+                    <label>路径</label>
+                    <input type="text" v-model="menuForm.path" placeholder="例如: /admin/index.html">
+                </div>
+                <div class="form-group">
+                    <label>图标</label>
+                    <input type="text" v-model="menuForm.icon" placeholder="例如: ri-home-line">
+                </div>
+                <div class="form-group">
+                    <label>父菜单</label>
+                    <select v-model="menuForm.parentId">
+                        <option :value="0">顶级菜单</option>
+                        <option v-for="menu in parentMenuOptions" :key="menu.id" :value="menu.id">
+                            {{ menu.name }}
+                        </option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>排序</label>
+                    <input type="number" v-model.number="menuForm.sort">
+                </div>
+                <div class="form-group">
+                    <label>状态</label>
+                    <select v-model="menuForm.visible">
+                        <option :value="1">显示</option>
+                        <option :value="0">隐藏</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-ghost" @click="showModal = false">取消</button>
+                    <button type="submit" class="btn btn-primary">{{ isEdit ? '保存' : '创建' }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+const { createApp } = Vue;
+
+createApp({
+    data() {
+        return {
+            adminInfo: {},
+            menus: [],
+            menuTree: [],
+            menuList: [],
+            parentMenuOptions: [],
+            page: 1,
+            size: 10,
+            total: 0,
+            totalPages: 1,
+            searchForm: {
+                keyword: ''
+            },
+            showModal: false,
+            isEdit: false,
+            menuForm: {
+                id: null,
+                name: '',
+                path: '',
+                icon: '',
+                parentId: 0,
+                sort: 0,
+                visible: 1
+            }
+        };
+    },
+    mounted() {
+        this.loadMenusFromStorage();
+        this.checkAuth();
+        this.loadAdminInfo();
+        this.loadMenuTree();
+        this.loadMenus();
+    },
+    methods: {
+        loadMenusFromStorage() {
+            const stored = localStorage.getItem('adminMenus');
+            if (stored) {
+                try {
+                    this.menus = JSON.parse(stored);
+                } catch (e) {
+                    console.error('解析菜单缓存失败:', e);
+                }
+            }
+            if (this.menus.length === 0) {
+                this.menus = [
+                    { id: 1, name: '控制台', path: '/admin/index.html', icon: 'ri-home-line' },
+                    { id: 2, name: '订单管理', path: '/admin/orders.html', icon: 'ri-file-list-3-line' },
+                    { id: 3, name: '商品管理', path: '/admin/products.html', icon: 'ri-shopping-bag-line' },
+                    { id: 4, name: '角色管理', path: '/admin/role.html', icon: 'ri-shield-line' },
+                    { id: 5, name: '菜单管理', path: '/admin/menu.html', icon: 'ri-menu-line' }
+                ];
+            }
+        },
+        async checkAuth() {
+            try {
+                const response = await fetch('/admin/api/info');
+                const result = await response.json();
+                if (result.code !== 200) {
+                    window.location.href = '/admin/login.html';
+                }
+            } catch (error) {
+                window.location.href = '/admin/login.html';
+            }
+        },
+        async loadAdminInfo() {
+            const stored = localStorage.getItem('adminInfo');
+            if (stored) {
+                this.adminInfo = JSON.parse(stored);
+            }
+            try {
+                const response = await fetch('/admin/api/info');
+                const result = await response.json();
+                if (result.code === 200) {
+                    this.adminInfo = result.data;
+                    localStorage.setItem('adminInfo', JSON.stringify(result.data));
+                }
+            } catch (error) {
+                console.error('获取管理员信息失败:', error);
+            }
+        },
+        async loadMenuTree() {
+            try {
+                const response = await fetch('/admin/api/menus/tree');
+                const result = await response.json();
+                if (result.code === 200) {
+                    this.menuTree = result.data;
+                    this.parentMenuOptions = this.flattenMenuTree(result.data);
+                }
+            } catch (error) {
+                console.error('加载菜单树失败:', error);
+            }
+        },
+        flattenMenuTree(menus) {
+            let result = [];
+            menus.forEach(menu => {
+                result.push({ id: menu.id, name: menu.name });
+                if (menu.children && menu.children.length > 0) {
+                    menu.children.forEach(child => {
+                        result.push({ id: child.id, name: '└─ ' + child.name });
+                    });
+                }
+            });
+            return result;
+        },
+        async loadMenus() {
+            try {
+                let url = `/admin/api/menus?page=${this.page}&size=${this.size}`;
+                if (this.searchForm.keyword) {
+                    url += `&keyword=${this.searchForm.keyword}`;
+                }
+                const response = await fetch(url);
+                const result = await response.json();
+                if (result.code === 200) {
+                    this.menuList = result.data.records;
+                    this.total = result.data.total;
+                    this.totalPages = Math.ceil(result.data.total / this.size);
+                }
+            } catch (error) {
+                console.error('加载菜单列表失败:', error);
+            }
+        },
+        selectMenu(menu) {
+            this.showEditModal(menu);
+        },
+        showAddModal() {
+            this.isEdit = false;
+            this.menuForm = {
+                id: null,
+                name: '',
+                path: '',
+                icon: '',
+                parentId: 0,
+                sort: 0,
+                visible: 1
+            };
+            this.showModal = true;
+        },
+        showEditModal(menu) {
+            this.isEdit = true;
+            this.menuForm = {
+                id: menu.id,
+                name: menu.name,
+                path: menu.path || '',
+                icon: menu.icon || '',
+                parentId: menu.parentId || 0,
+                sort: menu.sort || 0,
+                visible: menu.visible
+            };
+            this.showModal = true;
+        },
+        async submitMenu() {
+            try {
+                const url = this.isEdit ? `/admin/api/menus/${this.menuForm.id}` : '/admin/api/menus';
+                const method = this.isEdit ? 'PUT' : 'POST';
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(this.menuForm)
+                });
+                const result = await response.json();
+                if (result.code === 200) {
+                    this.showModal = false;
+                    this.loadMenuTree();
+                    this.loadMenus();
+                } else {
+                    alert(result.message || '保存失败');
+                }
+            } catch (error) {
+                console.error('保存菜单失败:', error);
+                alert('保存菜单失败');
+            }
+        },
+        async deleteMenu(menu) {
+            if (!confirm(`确定要删除菜单"${menu.name}"吗？`)) {
+                return;
+            }
+            try {
+                const response = await fetch(`/admin/api/menus/${menu.id}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+                if (result.code === 200) {
+                    this.loadMenuTree();
+                    this.loadMenus();
+                } else {
+                    alert(result.message || '删除失败');
+                }
+            } catch (error) {
+                console.error('删除菜单失败:', error);
+                alert('删除菜单失败');
+            }
+        },
+        async handleLogout() {
+            try {
+                await fetch('/admin/api/logout', { method: 'POST' });
+                localStorage.removeItem('adminInfo');
+                localStorage.removeItem('adminMenus');
+                window.location.href = '/admin/login.html';
+            } catch (error) {
+                console.error('退出登录失败:', error);
+            }
+        }
+    }
+}).mount('#app');
+</script>
+</body>
+</html>

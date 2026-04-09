@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="design-page" content="true">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saint Code - AI API Platform</title>
+    <link rel="icon" type="image/x-icon" href="/themes/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/themes/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/themes/apple-touch-icon.png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: #0a0e17;
+            color: #00f0ff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(90deg, transparent 49%, rgba(0,240,255,0.03) 50%, transparent 51%),
+                linear-gradient(transparent 49%, rgba(0,240,255,0.03) 50%, transparent 51%);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .header {
+            background: rgba(10, 14, 23, 0.9);
+            backdrop-filter: blur(20px);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(0,240,255,0.3);
+            box-shadow: 0 0 30px rgba(0,240,255,0.1);
+        }
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #00f0ff;
+            text-shadow: 0 0 10px rgba(0,240,255,0.5);
+            letter-spacing: 2px;
+        }
+        .logo span { color: #ff00aa; text-shadow: 0 0 10px rgba(255,0,170,0.5); }
+        .nav a {
+            color: #00f0ff;
+            text-decoration: none;
+            margin-left: 2rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .nav a::before {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #00f0ff;
+            box-shadow: 0 0 10px #00f0ff;
+            transition: width 0.3s;
+        }
+        .nav a:hover { color: #fff; text-shadow: 0 0 10px #00f0ff; }
+        .nav a:hover::before { width: 100%; }
+        .hero {
+            padding: 8rem 2rem 4rem;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(0,240,255,0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 10px rgba(0,240,255,0.5); }
+            to { text-shadow: 0 0 20px rgba(0,240,255,0.8), 0 0 40px rgba(0,240,255,0.4); }
+        }
+        .hero h1 span {
+            color: #ff00aa;
+            text-shadow: 0 0 20px rgba(255,0,170,0.5);
+        }
+        .hero p {
+            font-size: 1.25rem;
+            color: rgba(0,240,255,0.7);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            letter-spacing: 1px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 0.875rem 2rem;
+            background: transparent;
+            border: 2px solid #00f0ff;
+            color: #00f0ff;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 600;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0,240,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        .btn:hover {
+            background: rgba(0,240,255,0.1);
+            box-shadow: 0 0 30px rgba(0,240,255,0.5), inset 0 0 30px rgba(0,240,255,0.1);
+        }
+        .btn:hover::before { left: 100%; }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        .feature-card {
+            background: rgba(10, 14, 23, 0.8);
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid rgba(0,240,255,0.3);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0,240,255,0.1) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .feature-card:hover {
+            border-color: #00f0ff;
+            box-shadow: 0 0 30px rgba(0,240,255,0.3);
+            transform: translateY(-5px);
+        }
+        .feature-card:hover::before { opacity: 1; }
+        .feature-card h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+            color: #00f0ff;
+        }
+        .feature-card p { color: rgba(0,240,255,0.7); line-height: 1.6; }
+        .footer {
+            background: rgba(10, 14, 23, 0.9);
+            padding: 3rem 2rem;
+            text-align: center;
+            border-top: 1px solid rgba(0,240,255,0.3);
+        }
+        .footer p { color: rgba(0,240,255,0.5); letter-spacing: 1px; }
+    </style>
+    <script src="/theme/theme-switcher.js"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">SAINT <span>CODE</span></div>
+        <nav class="nav">
+            <a href="/">首页</a>
+            <a href="#features">功能</a>
+            <a href="/about">关于</a>
+            <a href="https://isaint.cc/status/" target="_blank">状态</a>
+            <a href="/login">登录</a>
+        </nav>
+    </header>
+    <section class="hero">
+        <h1>您的专属<br><span>AI API</span> 中转服务</h1>
+        <p>// 聚合 40+ AI 服务商 // 统一接口 // 稳定高效 //</p>
+        <a href="/login" class="btn">立即使用</a>
+    </section>
+    <section class="features" id="features">
+        <div class="feature-card">
+            <h3>[01] 统一接口</h3>
+            <p>一个 API 密钥接入所有主流 AI 模型，无需多平台管理</p>
+        </div>
+        <div class="feature-card">
+            <h3>[02] 按需付费</h3>
+            <p>灵活充值，用多少付多少，无月费，无隐藏费用</p>
+        </div>
+        <div class="feature-card">
+            <h3>[03] 稳定快速</h3>
+            <p>多节点负载均衡，智能故障转移，99.9% 可用性保障</p>
+        </div>
+        <div class="feature-card">
+            <h3>[04] 安全可靠</h3>
+            <p>数据加密传输，不存储对话内容，保护您的隐私安全</p>
+        </div>
+    </section>
+    <footer class="footer">
+        <p>© 2026 SAINT CODE // 系统在线</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台管理登录 - PayPro</title>
+    <script src="/js/vue.global.min.js"></script>
+    <link href="/css/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css">
+    <style>
+        .login-wrap {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            padding: 48px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .login-icon {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+        }
+
+        .login-icon i {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+        }
+
+        .login-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 8px;
+        }
+
+        .login-subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--text-color);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.25rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 16px 18px 16px 52px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            font-size: 1rem;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary-color);
+            background: rgba(99, 102, 241, 0.05);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .login-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .footer-hint {
+            text-align: center;
+            margin-top: 32px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .footer-hint span {
+            color: var(--text-color);
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="login-wrap">
+            <div class="glass login-card">
+                <div class="login-header">
+                    <div class="login-icon">
+                        <i class="ri-shield-keyhole-line"></i>
+                    </div>
+                    <h1 class="login-title">后台管理</h1>
+                    <p class="login-subtitle">PayPro 支付系统管理后台</p>
+                </div>
+                
+                <div v-if="errorMessage" class="error-message">
+                    <i class="ri-error-warning-line"></i>
+                    {{ errorMessage }}
+                </div>
+                
+                <form @submit.prevent="handleLogin">
+                    <div class="form-group">
+                        <label class="form-label">用户名</label>
+                        <div class="input-wrapper">
+                            <i class="ri-user-line"></i>
+                            <input 
+                                type="text" 
+                                class="form-input" 
+                                v-model="username" 
+                                placeholder="请输入用户名"
+                                required
+                            >
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">密码</label>
+                        <div class="input-wrapper">
+                            <i class="ri-lock-line"></i>
+                            <input 
+                                type="password" 
+                                class="form-input" 
+                                v-model="password" 
+                                placeholder="请输入密码"
+                                required
+                            >
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="login-btn" :disabled="loading">
+                        <i class="ri-login-circle-line"></i>
+                        {{ loading ? '登录中...' : '登录' }}
+                    </button>
+                </form>
+                
+                <div class="footer-hint">
+                    <p>默认账号: <span>admin</span> / <span>admin123</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    username: '',
+                    password: '',
+                    loading: false,
+                    errorMessage: ''
+                };
+            },
+            methods: {
+                async handleLogin() {
+                    if (!this.username || !this.password) {
+                        this.errorMessage = '请输入用户名和密码';
+                        return;
+                    }
+                    
+                    this.loading = true;
+                    this.errorMessage = '';
+                    
+                    try {
+                        const response = await fetch('/admin/api/login', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                username: this.username,
+                                password: this.password
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.code === 200) {
+                            localStorage.setItem('adminInfo', JSON.stringify(result.data));
+                            window.location.href = '/admin/index.html';
+                        } else {
+                            this.errorMessage = result.msg || '登录失败';
+                        }
+                    } catch (error) {
+                        this.errorMessage = '网络错误，请稍后重试';
+                    } finally {
+                        this.loading = false;
+                    }
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

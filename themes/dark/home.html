@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="design-page" content="true">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saint Code - AI API Platform</title>
+    <link rel="icon" type="image/x-icon" href="/themes/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/themes/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/themes/apple-touch-icon.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0d0d0d;
+            color: #fff;
+            min-height: 100vh;
+        }
+        .header {
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid #333;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .nav a {
+            color: #aaa;
+            text-decoration: none;
+            margin-left: 2rem;
+            transition: color 0.3s;
+        }
+        .nav a:hover { color: #fff; }
+        .hero {
+            padding: 8rem 2rem 4rem;
+            text-align: center;
+            background: radial-gradient(ellipse at top, #1a1a2e 0%, #0d0d0d 50%);
+        }
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+        .hero h1 span {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero p {
+            font-size: 1.25rem;
+            color: #888;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+        .btn {
+            display: inline-block;
+            padding: 0.875rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .feature-card {
+            background: #1a1a1a;
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid #333;
+            transition: border-color 0.3s;
+        }
+        .feature-card:hover { border-color: #667eea; }
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+        .feature-card p { color: #888; line-height: 1.6; }
+        .footer {
+            background: #1a1a1a;
+            padding: 3rem 2rem;
+            text-align: center;
+            border-top: 1px solid #333;
+        }
+        .footer p { color: #666; }
+    </style>
+    <script src="/theme/theme-switcher.js"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">Saint Code</div>
+        <nav class="nav">
+            <a href="/">首页</a>
+            <a href="#features">功能</a>
+            <a href="/about">关于</a>
+            <a href="https://isaint.cc/status/" target="_blank">状态</a>
+            <a href="/login">登录</a>
+        </nav>
+    </header>
+    <section class="hero">
+        <h1>您的专属<br><span>AI API</span> 中转服务</h1>
+        <p>聚合全球 40+ AI 服务商，统一接口，稳定高效，按需付费</p>
+        <a href="/login" class="btn">立即使用</a>
+    </section>
+    <section class="features" id="features">
+        <div class="feature-card">
+            <h3>🚀 统一接口</h3>
+            <p>一个 API 密钥接入所有主流 AI 模型，无需多平台管理</p>
+        </div>
+        <div class="feature-card">
+            <h3>💰 按需付费</h3>
+            <p>灵活充值，用多少付多少，无月费，无隐藏费用</p>
+        </div>
+        <div class="feature-card">
+            <h3>⚡ 稳定快速</h3>
+            <p>多节点负载均衡，智能故障转移，99.9% 可用性保障</p>
+        </div>
+        <div class="feature-card">
+            <h3>🔒 安全可靠</h3>
+            <p>数据加密传输，不存储对话内容，保护您的隐私安全</p>
+        </div>
+    </section>
+    <footer class="footer">
+        <p>© 2026 Saint Code. All rights reserved.</p>
+    </footer>
+</body>
+</html>

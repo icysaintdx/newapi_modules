@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="design-page" content="true">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saint Code - AI API Platform</title>
+    <link rel="icon" type="image/x-icon" href="/themes/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/themes/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/themes/apple-touch-icon.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        .left-panel { position: relative; width: 55%; min-width: 500px; background: linear-gradient(135deg, #6C3FF5e6, #6C3FF5, #6C3FF5cc); display: flex; flex-direction: column; justify-content: space-between; padding: 48px; color: white; overflow: hidden; }
+        .deco-grid { position: absolute; inset: 0; pointer-events: none; background-image: linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 20px 20px; }
+        .deco-circle { position: absolute; border-radius: 50%; filter: blur(48px); pointer-events: none; }
+        .deco-circle-1 { top: 25%; right: 25%; width: 256px; height: 256px; background: rgba(255,255,255,0.1); }
+        .deco-circle-2 { bottom: 25%; left: 25%; width: 384px; height: 384px; background: rgba(255,255,255,0.05); }
+        .brand { position: relative; z-index: 20; display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 600; }
+        .brand-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.1); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; }
+        .characters-area { position: relative; z-index: 20; display: flex; align-items: flex-end; justify-content: center; height: 500px; }
+        .footer-links { position: relative; z-index: 20; display: flex; gap: 32px; font-size: 14px; }
+        .footer-links a { color: rgba(255,255,255,0.6); text-decoration: none; transition: color 0.2s; }
+        .footer-links a:hover { color: white; }
+        .right-panel { flex: 1; display: flex; align-items: center; justify-content: center; background: #fafafa; padding: 2rem; }
+        .content-container { width: 100%; max-width: 500px; text-align: center; }
+        .content-container h1 { font-size: 36px; font-weight: 800; color: #1a1a1a; margin-bottom: 16px; line-height: 1.2; }
+        .content-container h1 span { color: #6C3FF5; }
+        .content-container .subtitle { color: #888; margin-bottom: 40px; font-size: 16px; line-height: 1.6; }
+        .feature-list { text-align: left; margin-bottom: 40px; }
+        .feature-item { display: flex; align-items: center; gap: 16px; padding: 16px 0; border-bottom: 1px solid #eee; }
+        .feature-icon { width: 48px; height: 48px; border-radius: 12px; background: rgba(108, 63, 245, 0.1); display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+        .feature-text h3 { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 4px; }
+        .feature-text p { font-size: 14px; color: #888; }
+        .btn-primary { display: inline-block; padding: 14px 40px; background: #6C3FF5; color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; text-decoration: none; transition: background 0.2s, transform 0.2s; }
+        .btn-primary:hover { background: #5a2fd4; transform: translateY(-1px); }
+        .btn-secondary { display: inline-block; padding: 14px 40px; background: transparent; color: #6C3FF5; border: 2px solid #6C3FF5; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.2s; margin-left: 12px; }
+        .btn-secondary:hover { background: rgba(108, 63, 245, 0.05); }
+        .characters-container { position: relative; width: 550px; height: 400px; }
+        .char { position: absolute; bottom: 0; transition: all 0.7s ease-in-out; transform-origin: bottom center; }
+        .purple { left: 70px; width: 180px; height: 400px; background: #6C3FF5; border-radius: 10px 10px 0 0; z-index: 1; }
+        .black { left: 240px; width: 120px; height: 310px; background: #2D2D2D; border-radius: 8px 8px 0 0; z-index: 2; }
+        .orange { left: 0; width: 240px; height: 200px; background: #FF9B6B; border-radius: 120px 120px 0 0; z-index: 3; }
+        .yellow { left: 310px; width: 140px; height: 230px; background: #E8D754; border-radius: 70px 70px 0 0; z-index: 4; }
+        .eyes { position: absolute; display: flex; transition: all 0.7s ease-in-out; }
+        .eyeball { border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; transition: height 0.15s, width 0.15s; overflow: hidden; }
+        .pupil { border-radius: 50%; background: #2D2D2D; transition: transform 0.1s ease-out; }
+        .mouth { position: absolute; width: 80px; height: 4px; background: #2D2D2D; border-radius: 4px; transition: all 0.2s ease-out; }
+        .glasses { position: absolute; pointer-events: none; z-index: 10; }
+        .glasses-lens { position: absolute; border: 3px solid #2D2D2D; border-radius: 50%; background: rgba(255,255,255,0.15); }
+        .glasses-bridge { position: absolute; width: 8px; height: 3px; background: #2D2D2D; border-radius: 2px; }
+        .glasses-arm-l { position: absolute; width: 15px; height: 3px; background: #2D2D2D; border-radius: 2px; }
+        .glasses-arm-r { position: absolute; width: 15px; height: 3px; background: #2D2D2D; border-radius: 2px; }
+        @media (max-width: 900px) { .left-panel { display: none; } .right-panel { width: 100%; } }
+        .char-mouth { position: absolute; transition: all 0.4s ease; }
+        .purple .char-mouth { width: 16px; height: 4px; border-radius: 2px; background: #2D2D2D; }
+        .black .char-mouth { width: 12px; height: 3px; border-radius: 2px; background: #2D2D2D; }
+        .orange .char-mouth { width: 24px; height: 12px; border-radius: 0 0 24px 24px; background: #2D2D2D; }
+        .yellow .char-mouth { width: 80px; height: 4px; border-radius: 4px; background: #2D2D2D; }
+    </style>
+    <script src="/theme/theme-switcher.js"></script>
+</head>
+<body>
+    <div class="left-panel">
+        <div class="deco-grid"></div>
+        <div class="deco-circle deco-circle-1"></div>
+        <div class="deco-circle deco-circle-2"></div>
+        <div class="brand"><a href="/" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:8px;"><div class="brand-icon">✨</div><span>Saint Code</span></a></div>
+                <div class="characters-area">
+            <div class="characters-container">
+                <div class="char purple" id="purple">
+                    <div class="eyes" id="purple-eyes">
+                        <div class="eyeball" id="pe1" style="width:18px;height:18px"><div class="pupil" style="width:8px;height:8px"></div></div>
+                        <div class="eyeball" id="pe2" style="width:18px;height:18px"><div class="pupil" style="width:8px;height:8px"></div></div>
+                    </div>
+                    <div class="char-mouth" id="purple-mouth"></div>
+                </div>
+                <div class="char black" id="black">
+                    <div class="eyes" id="black-eyes">
+                        <div class="eyeball" id="be1" style="width:16px;height:16px"><div class="pupil" style="width:6px;height:6px"></div></div>
+                        <div class="eyeball" id="be2" style="width:16px;height:16px"><div class="pupil" style="width:6px;height:6px"></div></div>
+                    </div>
+                    <div class="char-mouth" id="black-mouth"></div>
+                </div>
+                <div class="char orange" id="orange">
+                    <div class="eyes" id="orange-eyes">
+                        <div class="eyeball" id="oe1" style="width:12px;height:12px"><div class="pupil" style="width:5px;height:5px"></div></div>
+                        <div class="eyeball" id="oe2" style="width:12px;height:12px"><div class="pupil" style="width:5px;height:5px"></div></div>
+                    </div>
+                    <div class="char-mouth" id="orange-mouth"></div>
+                </div>
+                <div class="char yellow" id="yellow">
+                    <div class="eyes" id="yellow-eyes">
+                        <div class="eyeball" id="ye1" style="width:12px;height:12px"><div class="pupil" style="width:5px;height:5px"></div></div>
+                        <div class="eyeball" id="ye2" style="width:12px;height:12px"><div class="pupil" style="width:5px;height:5px"></div></div>
+                    </div>
+                    <div class="char-mouth" id="yellow-mouth"></div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-links">
+            <a href="https://isaint.cc/status/" target="_blank">📡 状态</a>
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/about">Terms of Service</a>
+            <a href="#">Contact</a>
+        </div>
+    </div>
+    <div class="right-panel">
+        <div class="content-container">
+            <h1>AI 模型<br><span>一站式平台</span></h1>
+            <p class="subtitle">集成全球顶尖 AI 模型，提供稳定、高速、低成本的 API 服务。支持 OpenAI、Claude、Gemini 等主流模型。</p>
+            <div class="feature-list">
+                <div class="feature-item"><div class="feature-icon">🚀</div><div class="feature-text"><h3>极速响应</h3><p>全球多节点部署，毫秒级响应</p></div></div>
+                <div class="feature-item"><div class="feature-icon">🔒</div><div class="feature-text"><h3>安全可靠</h3><p>企业级安全防护，数据加密传输</p></div></div>
+                <div class="feature-item"><div class="feature-icon">💰</div><div class="feature-text"><h3>超值价格</h3><p>低于官方定价，按需付费无浪费</p></div></div>
+            </div>
+            <div><a href="/login" class="btn-primary">立即开始</a><a href="/about" class="btn-secondary">了解更多</a></div>
+        </div>
+    </div>
+    <script src="/theme/animated/characters.js"></script>
+</body>
+</html>

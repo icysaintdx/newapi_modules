@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>订单管理 - PayPro</title>
+    <script src="/js/vue.global.min.js"></script>
+    <link href="/css/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css">
+    <style>
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-right: var(--glass-border);
+            color: var(--text-color);
+            padding: 24px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar:hover {
+            border-right-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .logo {
+            padding: 0 30px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 24px;
+        }
+        
+        .logo h1 {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+        
+        .menu {
+            list-style: none;
+        }
+        
+        .menu-item {
+            margin: 8px 16px;
+        }
+        
+        .menu-link {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 20px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-size: 15px;
+            font-weight: 500;
+        }
+        
+        .menu-link:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+        }
+        
+        .menu-link.active {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+            color: var(--text-color);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+        
+        .menu-link i {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 24px;
+        }
+        
+        .header {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: var(--glass-border);
+            border-radius: 20px;
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h2 {
+            font-size: 20px;
+            color: var(--text-color);
+            font-weight: 600;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .user-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        
+        .user-details {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .user-name {
+            color: var(--text-color);
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .user-role {
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+        
+        .logout-btn {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .content {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: var(--glass-border);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .card-header {
+            padding: 24px 28px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .card-body {
+            padding: 28px;
+        }
+        
+        .search-form {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            font-size: 14px;
+            outline: none;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+            backdrop-filter: blur(8px);
+        }
+        
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .search-input:focus {
+            border-color: var(--primary-color);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .filter-select {
+            padding: 12px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            font-size: 14px;
+            outline: none;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+            backdrop-filter: blur(8px);
+        }
+        
+        .filter-select option {
+            background: var(--surface-color);
+            color: var(--text-color);
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        }
+        
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+        
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn-ghost:hover {
+            color: var(--text-color);
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th,
+        .table td {
+            padding: 14px 18px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .table th {
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .table td {
+            font-size: 14px;
+            color: var(--text-color);
+        }
+        
+        .table tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            backdrop-filter: blur(8px);
+        }
+        
+        .status-badge.pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+        
+        .status-badge.paid {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        
+        .status-badge.failed {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        
+        .status-badge.scanned {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .status-badge.api-order {
+            background: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .status-badge.product-order {
+            background: rgba(99, 102, 241, 0.1);
+            color: #6366f1;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+        
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .action-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background: rgba(99, 102, 241, 0.1);
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 24px;
+        }
+        
+        .pagination button {
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--glass-bg);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-muted);
+        }
+        
+        .pagination button:hover:not(:disabled) {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .pagination span {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+        }
+        
+        .modal-content {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: var(--glass-border);
+            border-radius: 20px;
+            padding: 28px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .modal-header h3 {
+            font-size: 18px;
+            color: var(--text-color);
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: color 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            color: var(--text-color);
+        }
+        
+        .detail-item {
+            margin-bottom: 20px;
+        }
+        
+        .detail-item label {
+            display: block;
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        
+        .detail-item .value {
+            font-size: 16px;
+            color: var(--text-color);
+            font-weight: 500;
+            word-break: break-all;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-select {
+            width: 100%;
+            padding: 12px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            font-size: 14px;
+            outline: none;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+            backdrop-filter: blur(8px);
+        }
+        
+        .form-select option {
+            background: var(--surface-color);
+            color: var(--text-color);
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 1000;
+            }
+            
+            .main {
+                margin-left: 0;
+                padding: 16px;
+            }
+            
+            .search-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-input {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="layout">
+            <aside class="sidebar">
+                <div class="logo">
+                    <h1><i class="ri-dashboard-line"></i> PayPro</h1>
+                    <p>后台管理系统</p>
+                </div>
+                
+                <ul class="menu">
+                    <li class="menu-item" v-for="menu in menus" :key="menu.id">
+                        <a :href="menu.path" class="menu-link" :class="{active: menu.path.includes('orders.html')}">
+                            <i :class="menu.icon"></i>
+                            <span>{{ menu.name }}</span>
+                        </a>
+                    </li>
+                </ul>
+            </aside>
+            
+            <main class="main">
+                <header class="header">
+                    <h2>订单管理</h2>
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            {{ adminInfo.nickname ? adminInfo.nickname.charAt(0) : 'A' }}
+                        </div>
+                        <div class="user-details">
+                            <div class="user-name">{{ adminInfo.nickname || adminInfo.username || '管理员' }}</div>
+                            <div class="user-role">系统管理员</div>
+                        </div>
+                        <button class="logout-btn" @click="handleLogout">
+                            <i class="ri-logout-box-line"></i> 退出
+                        </button>
+                    </div>
+                </header>
+                
+                <div class="content">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="search-form">
+                                <input type="text" class="search-input" v-model="searchForm.orderId" placeholder="订单号">
+                                <input type="text" class="search-input" v-model="searchForm.payNum" placeholder="支付标识">
+                                <select class="filter-select" v-model="searchForm.state">
+                                    <option value="">全部状态</option>
+                                    <option value="0">待支付</option>
+                                    <option value="1">已支付</option>
+                                    <option value="2">已失败</option>
+                                    <option value="4">已扫码</option>
+                                </select>
+                                <select class="filter-select" v-model="searchForm.payType">
+                                    <option value="">全部方式</option>
+                                    <option value="alipay">支付宝</option>
+                                    <option value="wechat">微信</option>
+                                </select>
+                                <select class="filter-select" v-model="searchForm.orderSource">
+                                    <option value="">全部类型</option>
+                                    <option value="API">NewAPI充值</option>
+                                    <option value="PRODUCT">商品购买</option>
+                                </select>
+                                <button class="btn btn-primary" @click="loadOrders">
+                                    <i class="ri-search-line"></i> 搜索
+                                </button>
+                                <button class="btn btn-ghost" @click="showTimeoutOrders" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: rgba(245, 158, 11, 0.3);">
+                                    <i class="ri-alarm-warning-line"></i> 超时订单 <span v-if="timeoutCount > 0">({{ timeoutCount }})</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>订单号</th>
+                                        <th>订单类型</th>
+                                        <th>金额</th>
+                                        <th>支付方式</th>
+                                        <th>支付标识</th>
+                                        <th>状态</th>
+                                        <th>创建时间</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="order in orders" :key="order.id">
+                                        <td>{{ order.id }}</td>
+                                        <td>
+                                            <span class="status-badge" :class="order.orderSource === 'API' ? 'api-order' : 'product-order'">
+                                                {{ order.orderSource === 'API' ? 'NewAPI充值' : '商品购买' }}
+                                            </span>
+                                        </td>
+                                        <td>￥{{ order.money }}</td>
+                                        <td>{{ order.payType }}</td>
+                                        <td>{{ order.payNum }}</td>
+                                        <td>
+                                            <span class="status-badge" :class="getStatusClass(order.state)">
+                                                {{ getStatusText(order.state) }}
+                                            </span>
+                                        </td>
+                                        <td>{{ formatDate(order.createTime) }}</td>
+                                        <td>
+                                            <div class="action-btns">
+                                                <button class="action-btn" @click="showDetail(order)">
+                                                    <i class="ri-eye-line"></i> 详情
+                                                </button>
+                                                <button v-if="order.state === 0 || order.state === 4" class="action-btn" @click="confirmOrder(order)" style="border-color: rgba(16, 185, 129, 0.3); color: #10b981;">
+                                                    <i class="ri-check-line"></i> 确认支付
+                                                </button>
+                                                <button class="action-btn" @click="showUpdateStatus(order)">
+                                                    <i class="ri-edit-line"></i> 修改状态
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            
+                            <div class="pagination">
+                                <button @click="prevPage" :disabled="page === 1">上一页</button>
+                                <span>第 {{ page }} 页 / 共 {{ totalPages }} 页</span>
+                                <button @click="nextPage" :disabled="page >= totalPages">下一页</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+        <div v-if="showDetailModal" class="modal" @click.self="showDetailModal = false">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>订单详情</h3>
+                    <button class="modal-close" @click="showDetailModal = false">&times;</button>
+                </div>
+                
+                <div class="detail-item">
+                    <label>订单号</label>
+                    <div class="value">{{ currentOrder.id }}</div>
+                </div>
+                <div class="detail-item">
+                    <label>金额</label>
+                    <div class="value">￥{{ currentOrder.money }}</div>
+                </div>
+                <div class="detail-item">
+                    <label>支付方式</label>
+                    <div class="value">{{ currentOrder.payType }}</div>
+                </div>
+                <div class="detail-item">
+                    <label>支付标识</label>
+                    <div class="value">{{ currentOrder.payNum }}</div>
+                </div>
+                <div class="detail-item">
+                    <label>状态</label>
+                    <div class="value">
+                        <span class="status-badge" :class="getStatusClass(currentOrder.state)">
+                            {{ getStatusText(currentOrder.state) }}
+                        </span>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <label>邮箱</label>
+                    <div class="value">{{ currentOrder.email || '-' }}</div>
+                </div>
+                <div class="detail-item">
+                    <label>描述</label>
+                    <div class="value">{{ currentOrder.description || '-' }}</div>
+                </div>
+                <div class="detail-item">
+                    <label>创建时间</label>
+                    <div class="value">{{ formatDate(currentOrder.createTime) }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div v-if="showStatusModal" class="modal" @click.self="showStatusModal = false">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>修改订单状态</h3>
+                    <button class="modal-close" @click="showStatusModal = false">&times;</button>
+                </div>
+
+                <div class="detail-item">
+                    <label>订单号</label>
+                    <div class="value">{{ currentOrder.id }}</div>
+                </div>
+
+                <div class="form-group">
+                    <label>新状态</label>
+                    <select class="form-select" v-model="newStatus">
+                        <option value="0">待支付</option>
+                        <option value="1">已支付</option>
+                        <option value="2">已失败</option>
+                        <option value="4">已扫码</option>
+                    </select>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" @click="showStatusModal = false">取消</button>
+                    <button class="btn btn-primary" @click="updateStatus">确认修改</button>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="showTimeoutModal" class="modal" @click.self="showTimeoutModal = false">
+            <div class="modal-content" style="max-width: 800px;">
+                <div class="modal-header">
+                    <h3><i class="ri-alarm-warning-line"></i> 超时未确认订单（超过15分钟）</h3>
+                    <button class="modal-close" @click="showTimeoutModal = false">&times;</button>
+                </div>
+
+                <div v-if="timeoutOrders.length === 0" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                    <i class="ri-checkbox-circle-line" style="font-size: 48px; color: #10b981;"></i>
+                    <p style="margin-top: 16px;">暂无超时订单</p>
+                </div>
+
+                <table v-else class="table">
+                    <thead>
+                        <tr>
+                            <th>订单号</th>
+                            <th>金额</th>
+                            <th>支付标识</th>
+                            <th>状态</th>
+                            <th>超时时长</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="item in timeoutOrders" :key="item.order.id">
+                            <td>{{ item.order.id }}</td>
+                            <td>￥{{ item.order.money }}</td>
+                            <td>{{ item.order.payNum }}</td>
+                            <td>
+                                <span class="status-badge" :class="getStatusClass(item.order.state)">
+                                    {{ getStatusText(item.order.state) }}
+                                </span>
+                            </td>
+                            <td style="color: #f59e0b; font-weight: 600;">{{ item.timeoutMinutes }} 分钟</td>
+                            <td>
+                                <button class="action-btn" @click="confirmOrder(item.order); showTimeoutModal = false;" style="border-color: rgba(16, 185, 129, 0.3); color: #10b981;">
+                                    <i class="ri-check-line"></i> 确认支付
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    adminInfo: {},
+                    orders: [],
+                    page: 1,
+                    size: 10,
+                    total: 0,
+                    totalPages: 1,
+                    searchForm: {
+                        orderId: '',
+                        payNum: '',
+                        state: '',
+                        payType: ''
+                    },
+                    showDetailModal: false,
+                    showStatusModal: false,
+                    showTimeoutModal: false,
+                    currentOrder: {},
+                    newStatus: 0,
+                    menus: [],
+                    timeoutOrders: [],
+                    timeoutCount: 0
+                };
+            },
+            mounted() {
+                this.loadMenusFromStorage();
+                this.checkAuth();
+                this.loadAdminInfo();
+                this.loadOrders();
+                this.loadTimeoutCount();
+                // 每分钟刷新超时订单数量
+                setInterval(() => {
+                    this.loadTimeoutCount();
+                }, 60000);
+            },
+            methods: {
+                loadMenusFromStorage() {
+                    const stored = localStorage.getItem('adminMenus');
+                    if (stored) {
+                        try {
+                            this.menus = JSON.parse(stored);
+                        } catch (e) {
+                            console.error('解析菜单缓存失败:', e);
+                        }
+                    }
+                    if (this.menus.length === 0) {
+                        this.menus = [
+                            { id: 1, name: '控制台', path: '/admin/index.html', icon: 'ri-home-line' },
+                            { id: 2, name: '订单管理', path: '/admin/orders.html', icon: 'ri-file-list-3-line' },
+                            { id: 3, name: '商品管理', path: '/admin/products.html', icon: 'ri-shopping-bag-line' },
+                            { id: 4, name: '角色管理', path: '/admin/role.html', icon: 'ri-shield-line' },
+                            { id: 5, name: '菜单管理', path: '/admin/menu.html', icon: 'ri-menu-line' }
+                        ];
+                    }
+                },
+                async checkAuth() {
+                    try {
+                        const response = await fetch('/admin/api/info');
+                        const result = await response.json();
+                        if (result.code !== 200) {
+                            window.location.href = '/admin/login.html';
+                        }
+                    } catch (error) {
+                        window.location.href = '/admin/login.html';
+                    }
+                },
+                
+                async loadAdminInfo() {
+                    const stored = localStorage.getItem('adminInfo');
+                    if (stored) {
+                        this.adminInfo = JSON.parse(stored);
+                    }
+                },
+                
+                async loadOrders() {
+                    try {
+                        let url = `/admin/api/order/list?page=${this.page}&size=${this.size}`;
+                        if (this.searchForm.orderId) url += `&orderId=${this.searchForm.orderId}`;
+                        if (this.searchForm.payNum) url += `&payNum=${this.searchForm.payNum}`;
+                        if (this.searchForm.state) url += `&state=${this.searchForm.state}`;
+                        if (this.searchForm.payType) url += `&payType=${this.searchForm.payType}`;
+                        
+                        const response = await fetch(url);
+                        const result = await response.json();
+                        if (result.code === 200) {
+                            this.orders = result.data.list;
+                            this.total = result.data.total;
+                            this.totalPages = Math.ceil(this.total / this.size);
+                        }
+                    } catch (error) {
+                        console.error('获取订单列表失败:', error);
+                    }
+                },
+                
+                prevPage() {
+                    if (this.page > 1) {
+                        this.page--;
+                        this.loadOrders();
+                    }
+                },
+                
+                nextPage() {
+                    if (this.page < this.totalPages) {
+                        this.page++;
+                        this.loadOrders();
+                    }
+                },
+                
+                showDetail(order) {
+                    this.currentOrder = order;
+                    this.showDetailModal = true;
+                },
+                
+                showUpdateStatus(order) {
+                    this.currentOrder = order;
+                    this.newStatus = order.state;
+                    this.showStatusModal = true;
+                },
+                
+                async updateStatus() {
+                    try {
+                        const response = await fetch('/admin/api/order/updateStatus', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                orderId: this.currentOrder.id,
+                                state: parseInt(this.newStatus)
+                            })
+                        });
+
+                        const result = await response.json();
+                        if (result.code === 200) {
+                            alert('状态更新成功');
+                            this.showStatusModal = false;
+                            this.loadOrders();
+                            this.loadTimeoutCount();
+                        } else {
+                            alert(result.msg || '更新失败');
+                        }
+                    } catch (error) {
+                        alert('网络错误，请稍后重试');
+                    }
+                },
+
+                async confirmOrder(order) {
+                    if (!confirm(`确认订单 ${order.id} 已支付？`)) {
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`/admin/api/order/confirm/${order.id}`, {
+                            method: 'POST'
+                        });
+
+                        const result = await response.json();
+                        if (result.code === 200) {
+                            alert('订单确认成功');
+                            this.loadOrders();
+                            this.loadTimeoutCount();
+                        } else {
+                            alert(result.msg || '确认失败');
+                        }
+                    } catch (error) {
+                        alert('网络错误，请稍后重试');
+                    }
+                },
+
+                async loadTimeoutCount() {
+                    try {
+                        const response = await fetch('/admin/api/order/timeout');
+                        const result = await response.json();
+                        if (result.code === 200) {
+                            this.timeoutCount = result.data.total;
+                        }
+                    } catch (error) {
+                        console.error('获取超时订单数量失败:', error);
+                    }
+                },
+
+                async showTimeoutOrders() {
+                    try {
+                        const response = await fetch('/admin/api/order/timeout');
+                        const result = await response.json();
+                        if (result.code === 200) {
+                            this.timeoutOrders = result.data.list;
+                            this.showTimeoutModal = true;
+                        }
+                    } catch (error) {
+                        alert('获取超时订单失败');
+                    }
+                },
+                
+                async handleLogout() {
+                    try {
+                        await fetch('/admin/api/logout', { method: 'POST' });
+                        localStorage.removeItem('adminInfo');
+                        localStorage.removeItem('adminMenus');
+                        window.location.href = '/admin/login.html';
+                    } catch (error) {
+                        console.error('退出登录失败:', error);
+                    }
+                },
+                
+                getStatusClass(state) {
+                    const classMap = {
+                        0: 'pending',
+                        1: 'paid',
+                        2: 'failed',
+                        3: 'paid',
+                        4: 'scanned'
+                    };
+                    return classMap[state] || 'pending';
+                },
+                
+                getStatusText(state) {
+                    const textMap = {
+                        0: '待支付',
+                        1: '已支付',
+                        2: '已失败',
+                        3: '已支付',
+                        4: '已扫码'
+                    };
+                    return textMap[state] || '未知';
+                },
+                
+                formatDate(dateStr) {
+                    if (!dateStr) return '-';
+                    const date = new Date(dateStr);
+                    return date.toLocaleString('zh-CN');
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

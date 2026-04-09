@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="design-page" content="true">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>充值 - Saint Code</title>
+    <link rel="icon" type="image/x-icon" href="/themes/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/themes/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/themes/apple-touch-icon.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        .left-panel { position: relative; width: 55%; min-width: 500px; background: linear-gradient(135deg, #6C3FF5e6, #6C3FF5, #6C3FF5cc); display: flex; flex-direction: column; justify-content: space-between; padding: 48px; color: white; overflow: hidden; }
+        .left-panel .deco-grid { position: absolute; inset: 0; background-image: linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 20px 20px; pointer-events: none; }
+        .left-panel .deco-circle { position: absolute; border-radius: 50%; filter: blur(48px); pointer-events: none; }
+        .deco-circle-1 { top: 25%; right: 25%; width: 256px; height: 256px; background: rgba(255,255,255,0.1); }
+        .deco-circle-2 { bottom: 25%; left: 25%; width: 384px; height: 384px; background: rgba(255,255,255,0.05); }
+        .brand { position: relative; z-index: 20; display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 600; }
+        .brand-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.1); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; }
+        .characters-area { position: relative; z-index: 20; display: flex; align-items: flex-end; justify-content: center; height: 500px; }
+        .footer-links { position: relative; z-index: 20; display: flex; gap: 32px; font-size: 14px; }
+        .footer-links a { color: rgba(255,255,255,0.6); text-decoration: none; transition: color 0.2s; }
+        .footer-links a:hover { color: white; }
+        .right-panel { flex: 1; display: flex; align-items: center; justify-content: center; background: #fafafa; padding: 2rem; }
+        .form-container { width: 100%; max-width: 400px; }
+        .form-container h1 { font-size: 28px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px; }
+        .form-container .subtitle { color: #888; margin-bottom: 32px; font-size: 15px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 6px; color: #555; font-size: 14px; font-weight: 500; }
+        .form-group input { width: 100%; padding: 12px 16px; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; color: #333; font-size: 15px; transition: border-color 0.2s, box-shadow 0.2s; }
+        .form-group input:focus { outline: none; border-color: #6C3FF5; box-shadow: 0 0 0 3px rgba(108, 63, 245, 0.1); }
+        .btn-submit { width: 100%; padding: 14px; background: #6C3FF5; color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s, transform 0.2s; }
+        .btn-submit:hover { background: #5a2fd4; transform: translateY(-1px); }
+        .amount-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+        .amount-btn { padding: 14px; background: #fff; border: 2px solid #e0e0e0; border-radius: 10px; text-align: center; cursor: pointer; transition: all 0.2s; font-size: 16px; font-weight: 600; color: #333; }
+        .amount-btn:hover { border-color: #6C3FF5; color: #6C3FF5; }
+        .amount-btn.active { border-color: #6C3FF5; background: rgba(108, 63, 245, 0.05); color: #6C3FF5; }
+        .form-footer { margin-top: 24px; text-align: center; font-size: 14px; color: #888; }
+        .form-footer a { color: #6C3FF5; text-decoration: none; font-weight: 500; }
+        .form-footer a:hover { text-decoration: underline; }
+        .characters-container { position: relative; width: 550px; height: 400px; }
+        .char { position: absolute; bottom: 0; transition: all 0.7s ease-in-out; transform-origin: bottom center; }
+        .purple { left: 70px; width: 180px; height: 400px; background: #6C3FF5; border-radius: 10px 10px 0 0; z-index: 1; }
+        .black { left: 240px; width: 120px; height: 310px; background: #2D2D2D; border-radius: 8px 8px 0 0; z-index: 2; }
+        .orange { left: 0; width: 240px; height: 200px; background: #FF9B6B; border-radius: 120px 120px 0 0; z-index: 3; }
+        .yellow { left: 310px; width: 140px; height: 230px; background: #E8D754; border-radius: 70px 70px 0 0; z-index: 4; }
+        .eyes { position: absolute; display: flex; transition: all 0.7s ease-in-out; }
+        .mouth { position: absolute; width: 80px; height: 4px; background: #2D2D2D; border-radius: 4px; transition: all 0.2s ease-out; }
+        .glasses { position: absolute; pointer-events: none; z-index: 10; }
+        .glasses-lens { position: absolute; border: 3px solid #2D2D2D; border-radius: 50%; background: rgba(255,255,255,0.15); }
+        .glasses-bridge { position: absolute; width: 8px; height: 3px; background: #2D2D2D; border-radius: 2px; }
+        .glasses-arm-l { position: absolute; width: 15px; height: 3px; background: #2D2D2D; border-radius: 2px; }
+        .glasses-arm-r { position: absolute; width: 15px; height: 3px; background: #2D2D2D; border-radius: 2px; }
+        .eyeball { border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.15s; overflow: hidden; }
+        .pupil-inner { border-radius: 50%; transition: transform 0.1s ease-out; }
+        @media (max-width: 900px) { .left-panel { display: none; } .right-panel { width: 100%; } }
+    </style>
+    <script src="/theme/theme-switcher.js"></script>
+</head>
+<body>
+    <div class="left-panel">
+        <div class="deco-grid"></div>
+        <div class="deco-circle deco-circle-1"></div>
+        <div class="deco-circle deco-circle-2"></div>
+        <div class="brand"><a href="/" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:8px;"><div class="brand-icon">✨</div><span>Saint Code</span></a></div>
+                <div class="characters-area">
+            <div class="characters-container">
+                <div class="char purple" id="purple"><div class="eyes" id="purple-eyes"><div class="eyeball" id="pe1" style="width:18px;height:18px"><div class="pupil" style="width:7px;height:7px"></div></div><div class="eyeball" id="pe2" style="width:18px;height:18px"><div class="pupil" style="width:7px;height:7px"></div></div></div></div>
+                <div class="char black" id="black"><div class="eyes" id="black-eyes"><div class="eyeball" id="be1" style="width:16px;height:16px"><div class="pupil" style="width:6px;height:6px"></div></div><div class="eyeball" id="be2" style="width:16px;height:16px"><div class="pupil" style="width:6px;height:6px"></div></div></div></div>
+                <div class="char orange" id="orange"><div class="eyes" id="orange-eyes"><div class="glasses-lens" style="width:24px;height:24px;left:-6px;top:-6px"></div><div class="glasses-lens" style="width:24px;height:24px;left:21px;top:-6px"></div><div class="glasses-bridge" style="left:21px;top:5px"></div><div class="eyeball" id="oe1" style="width:12px;height:12px"><div class="pupil" style="width:5px;height:5px"></div></div><div class="eyeball" id="oe2" style="width:12px;height:12px;margin-left:3px"><div class="pupil" style="width:5px;height:5px"></div></div></div></div>
+                <div class="char yellow" id="yellow"><div class="eyes" id="yellow-eyes"><div class="eyeball" id="ye1" style="width:12px;height:12px"><div class="pupil" style="width:5px;height:5px"></div></div><div class="eyeball" id="ye2" style="width:12px;height:12px"><div class="pupil" style="width:5px;height:5px"></div></div></div><div class="mouth" id="yellow-mouth"></div></div>
+            </div>
+        </div>
+        <div class="footer-links"><a href="/privacy">Privacy Policy</a><a href="/about">Terms of Service</a><a href="#">Contact</a></div>
+    </div>
+    <div class="right-panel">
+        <div class="form-container">
+            <h1>充值额度</h1>
+            <p class="subtitle">选择充值金额或输入自定义金额</p>
+            <form id="topup-form">
+                <div class="amount-grid">
+                    <div class="amount-btn" data-amount="10">¥10</div>
+                    <div class="amount-btn" data-amount="50">¥50</div>
+                    <div class="amount-btn active" data-amount="100">¥100</div>
+                    <div class="amount-btn" data-amount="200">¥200</div>
+                    <div class="amount-btn" data-amount="500">¥500</div>
+                    <div class="amount-btn" data-amount="1000">¥1000</div>
+                </div>
+                <div class="form-group">
+                    <label>自定义金额</label>
+                    <input type="number" id="amount" placeholder="输入充值金额" min="1" value="100">
+                </div>
+                <div class="form-group">
+                    <label>支付方式</label>
+                    <select id="payment" style="width:100%;padding:12px 16px;background:#fff;border:1px solid #e0e0e0;border-radius:10px;color:#333;font-size:15px;">
+                        <option value="alipay">支付宝</option>
+                        <option value="wechat">微信支付</option>
+                    </select>
+                </div>
+                <div id="error-msg" style="color:#ff4d4f;font-size:14px;margin-bottom:16px;display:none;"></div>
+                <button type="submit" class="btn-submit" id="topup-btn">立即充值</button>
+            </form>
+            <div class="form-footer">
+                返回 <a href="/console">控制台</a>
+            </div>
+        </div>
+    </div>
+    <script>
+    // Animated Characters
+    (function(){var mouseX=0,mouseY=0,purpleBlinkState={value:false},blackBlinkState={value:false},lookingAtEachOther=false,purplePeeking=false,isTyping=false,hasSecret=false,secretVisible=false;var purpleEl=document.getElementById('purple'),blackEl=document.getElementById('black'),orangeEl=document.getElementById('orange'),yellowEl=document.getElementById('yellow');var purpleEyes=document.getElementById('purple-eyes'),blackEyes=document.getElementById('black-eyes'),orangeEyes=document.getElementById('orange-eyes'),yellowEyes=document.getElementById('yellow-eyes'),yellowMouth=document.getElementById('yellow-mouth');var purplePos={faceX:0,faceY:0,bodySkew:0},blackPos={faceX:0,faceY:0,bodySkew:0},orangePos={faceX:0,faceY:0,bodySkew:0},yellowPos={faceX:0,faceY:0,bodySkew:0};var hiding=false,leaning=false;document.addEventListener('mousemove',function(e){mouseX=e.clientX;mouseY=e.clientY});function calcPos(el,target){if(!el)return;var r=el.getBoundingClientRect();var dx=mouseX-(r.left+r.width/2);var dy=mouseY-(r.top+r.height/3);target.faceX=Math.max(-15,Math.min(15,dx/20));target.faceY=Math.max(-10,Math.min(10,dy/30));target.bodySkew=Math.max(-6,Math.min(6,-dx/120))}function updatePupils(){var pupils=document.querySelectorAll('.pupil-inner');pupils.forEach(function(p){var eye=p.parentElement;var r=eye.getBoundingClientRect();var dx=mouseX-(r.left+r.width/2);var dy=mouseY-(r.top+r.height/2);var dist=Math.min(Math.sqrt(dx*dx+dy*dy),10);var angle=Math.atan2(dy,dx);var tx=Math.cos(angle)*dist;var ty=Math.sin(angle)*dist;if(hiding){if(eye.id&&eye.id.indexOf('p')===0){tx=purplePeeking?4:-4;ty=purplePeeking?5:-4}else if(eye.id&&eye.id.indexOf('b')===0){tx=-4;ty=-4}}else if(lookingAtEachOther){if(eye.id&&eye.id.indexOf('p')===0){tx=3;ty=4}else if(eye.id&&eye.id.indexOf('b')===0){tx=0;ty=-4}}p.style.transform='translate('+tx+'px, '+ty+'px)'})}function tick(){calcPos(purpleEl,purplePos);calcPos(blackEl,blackPos);calcPos(orangeEl,orangePos);calcPos(yellowEl,yellowPos);hiding=hasSecret&&secretVisible;leaning=isTyping||(hasSecret&&!secretVisible);var pH=leaning?'440px':'400px';var pT=hiding?'skewX(0deg)':(lookingAtEachOther?'skewX('+(purplePos.bodySkew-12)+'deg) translateX(40px)':'skewX('+purplePos.bodySkew+'deg)');purpleEl.style.height=pH;purpleEl.style.transform=pT;var pEL=hiding?'20px':(lookingAtEachOther?'55px':(45+purplePos.faceX)+'px');var pET=hiding?'35px':(lookingAtEachOther?'65px':(40+purplePos.faceY)+'px');purpleEyes.style.left=pEL;purpleEyes.style.top=pET;var bT=hiding?'skewX(0deg)':(lookingAtEachOther?'skewX('+(blackPos.bodySkew*1.5+10)+'deg) translateX(20px)':'skewX('+(blackPos.bodySkew*1.5)+'deg)');blackEl.style.transform=bT;var bEL=hiding?'10px':(lookingAtEachOther?'32px':(26+blackPos.faceX)+'px');var bET=hiding?'28px':(lookingAtEachOther?'12px':(32+blackPos.faceY)+'px');blackEyes.style.left=bEL;blackEyes.style.top=bET;var oT=hiding?'skewX(0deg)':'skewX('+orangePos.bodySkew+'deg)';orangeEl.style.transform=oT;var oEL=hiding?'50px':(82+orangePos.faceX)+'px';var oET=hiding?'85px':(90+orangePos.faceY)+'px';orangeEyes.style.left=oEL;orangeEyes.style.top=oET;var yT=hiding?'skewX(0deg)':'skewX('+yellowPos.bodySkew+'deg)';yellowEl.style.transform=yT;var yEL=hiding?'20px':(52+yellowPos.faceX)+'px';var yET=hiding?'35px':(40+yellowPos.faceY)+'px';yellowEyes.style.left=yEL;yellowEyes.style.top=yET;var yML=hiding?'10px':(40+yellowPos.faceX)+'px';var yMT=hiding?'88px':(88+yellowPos.faceY)+'px';yellowMouth.style.left=yML;yellowMouth.style.top=yMT;updatePupils();requestAnimationFrame(tick)}setInterval(function(){purpleBlinkState.value=true;setTimeout(function(){purpleBlinkState.value=false},150)},Math.random()*4000+3000);setInterval(function(){blackBlinkState.value=true;setTimeout(function(){blackBlinkState.value=false},150)},Math.random()*4000+3000);setInterval(function(){var pe1=document.getElementById('pe1'),pe2=document.getElementById('pe2');var be1=document.getElementById('be1'),be2=document.getElementById('be2');if(purpleBlinkState.value){pe1.style.height='2px';pe2.style.height='2px'}else{pe1.style.height='18px';pe2.style.height='18px'}if(blackBlinkState.value){be1.style.height='2px';be2.style.height='2px'}else{be1.style.height='16px';be2.style.height='16px'}},50);var typingTimeout;document.addEventListener('input',function(e){if(e.target.tagName==='INPUT'){isTyping=true;hasSecret=e.target.type==='password';secretVisible=false;lookingAtEachOther=true;clearTimeout(typingTimeout);typingTimeout=setTimeout(function(){isTyping=false;lookingAtEachOther=false},800)}});setInterval(function(){if(hasSecret&&secretVisible){setTimeout(function(){purplePeeking=true;setTimeout(function(){purplePeeking=false},800)},Math.random()*3000+2000)}},5000);document.getElementById('pe1').style.width='18px';document.getElementById('pe2').style.width='18px';document.getElementById('be1').style.width='16px';document.getElementById('be2').style.width='16px';document.getElementById('oe1').style.width='12px';document.getElementById('oe2').style.width='12px';document.getElementById('ye1').style.width='12px';document.getElementById('ye2').style.width='12px';document.getElementById('pe1').style.height='18px';document.getElementById('pe2').style.height='18px';document.getElementById('be1').style.height='16px';document.getElementById('be2').style.height='16px';document.getElementById('oe1').style.height='12px';document.getElementById('oe2').style.height='12px';document.getElementById('ye1').style.height='12px';document.getElementById('ye2').style.height='12px';requestAnimationFrame(tick)})();
+    // Amount selection
+    document.querySelectorAll('.amount-btn').forEach(function(btn){btn.addEventListener('click',function(){document.querySelectorAll('.amount-btn').forEach(function(b){b.classList.remove('active')});btn.classList.add('active');document.getElementById('amount').value=btn.dataset.amount})});
+    // Topup form
+    document.getElementById('topup-form').addEventListener('submit',function(e){e.preventDefault();var btn=document.getElementById('topup-btn');var err=document.getElementById('error-msg');btn.disabled=true;btn.textContent='处理中...';err.style.display='none';var amount=document.getElementById('amount').value;fetch('/api/user/topup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:parseFloat(amount)})}).then(function(r){return r.json();}).then(function(d){if(d.success){alert('充值成功！');window.location.href='/console'}else{err.textContent=d.message||'充值失败';err.style.display='block';btn.disabled=false;btn.textContent='立即充值'}}).catch(function(){err.textContent='网络错误';err.style.display='block';btn.disabled=false;btn.textContent='立即充值'})});
+    </script>
+</body>
+</html>

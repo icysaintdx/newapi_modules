@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二维码管理 - PayPro</title>
+    <script src="/js/vue.global.min.js"></script>
+    <link href="/css/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css">
+    <style>
+        .layout { display: flex; min-height: 100vh; }
+        .sidebar { width: 280px; background: var(--glass-bg); backdrop-filter: blur(12px); border-right: var(--glass-border); color: var(--text-color); padding: 24px 0; position: fixed; height: 100vh; overflow-y: auto; }
+        .main { flex: 1; margin-left: 280px; padding: 24px; }
+        .header { margin-bottom: 32px; }
+        .header h2 { font-size: 28px; font-weight: 700; }
+
+        .tabs { display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 2px solid rgba(255,255,255,0.1); }
+        .tab-btn { padding: 12px 20px; background: none; border: none; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.3s; }
+        .tab-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .card { background: var(--glass-bg); border: var(--glass-border); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+        .card-title { font-size: 18px; font-weight: 600; margin-bottom: 20px; color: var(--primary-color); }
+
+        .upload-area { border: 2px dashed rgba(255,255,255,0.2); border-radius: 12px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.3s; }
+        .upload-area:hover { border-color: var(--primary-color); background: rgba(99, 102, 241, 0.05); }
+        .upload-area.dragover { border-color: var(--primary-color); background: rgba(99, 102, 241, 0.1); }
+        .upload-icon { font-size: 48px; color: var(--text-muted); margin-bottom: 16px; }
+        .upload-text { color: var(--text-color); font-size: 16px; margin-bottom: 8px; }
+        .upload-hint { color: var(--text-muted); font-size: 14px; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--text-color); font-weight: 500; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-color); }
+        .form-group small { display: block; margin-top: 4px; color: var(--text-muted); font-size: 12px; }
+
+        .btn { padding: 12px 32px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s; }
+        .btn-primary { background: var(--primary-color); color: white; }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .qr-preview { margin-top: 20px; padding: 20px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; }
+        .qr-preview img { max-width: 200px; max-height: 200px; border-radius: 8px; display: block; margin: 0 auto; }
+        .qr-preview-info { text-align: center; margin-top: 12px; color: var(--text-muted); font-size: 14px; }
+
+        .alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; }
+        .alert-success { background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); color: #22c55e; }
+        .alert-error { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; }
+
+        .fixed-amount-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-top: 20px; }
+        .fixed-amount-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; text-align: center; }
+        .fixed-amount-item img { width: 100%; height: auto; border-radius: 8px; margin-bottom: 12px; }
+        .fixed-amount-label { color: var(--text-color); font-weight: 500; margin-bottom: 8px; }
+        .fixed-amount-actions { display: flex; gap: 8px; justify-content: center; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="layout">
+            <aside class="sidebar">
+                <div style="padding: 0 30px 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); margin-bottom: 24px;">
+                    <h1 style="font-size: 22px; font-weight: 700;">PayPro</h1>
+                </div>
+                <ul style="list-style: none;">
+                    <li style="margin: 8px 16px;">
+                        <a href="/admin/index.html" style="display: flex; align-items: center; gap: 14px; padding: 14px 20px; color: var(--text-muted); text-decoration: none; border-radius: 12px;">
+                            <i class="ri-dashboard-line" style="font-size: 20px;"></i>
+                            <span>仪表盘</span>
+                        </a>
+                    </li>
+                    <li style="margin: 8px 16px;">
+                        <a href="/admin/qrcode-manager.html" style="display: flex; align-items: center; gap: 14px; padding: 14px 20px; color: var(--text-color); text-decoration: none; border-radius: 12px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2)); border: 1px solid rgba(99, 102, 241, 0.3);">
+                            <i class="ri-qr-code-line" style="font-size: 20px;"></i>
+                            <span>二维码管理</span>
+                        </a>
+                    </li>
+                    <li style="margin: 8px 16px;">
+                        <a href="/admin/settings.html" style="display: flex; align-items: center; gap: 14px; padding: 14px 20px; color: var(--text-muted); text-decoration: none; border-radius: 12px;">
+                            <i class="ri-settings-3-line" style="font-size: 20px;"></i>
+                            <span>系统配置</span>
+                        </a>
+                    </li>
+                </ul>
+            </aside>
+
+            <main class="main">
+                <div class="header">
+                    <h2>二维码管理</h2>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab-btn" :class="{ active: activeTab === 'custom' }" @click="activeTab = 'custom'">
+                        自定义收款码
+                    </button>
+                    <button class="tab-btn" :class="{ active: activeTab === 'fixed' }" @click="activeTab = 'fixed'">
+                        固定金额收款码
+                    </button>
+                </div>
+
+                <!-- 自定义收款码 -->
+                <div class="tab-content" :class="{ active: activeTab === 'custom' }">
+                    <div class="card">
+                        <div class="card-title">上传自定义收款码</div>
+                        <p style="color: var(--text-muted); margin-bottom: 20px;">
+                            上传后需要在"系统配置"页面保存配置才能生效
+                        </p>
+
+                        <div v-if="customAlert.show" :class="'alert alert-' + customAlert.type">
+                            {{ customAlert.message }}
+                        </div>
+
+                        <div class="form-group">
+                            <label>支付类型</label>
+                            <select v-model="customForm.type">
+                                <option value="alipay">支付宝</option>
+                                <option value="wechat">微信支付</option>
+                                <option value="wechat_zs">微信赞赏码</option>
+                            </select>
+                        </div>
+
+                        <div class="upload-area" @click="$refs.customFileInput.click()" @dragover.prevent="handleDragOver" @dragleave.prevent="handleDragLeave" @drop.prevent="handleCustomDrop">
+                            <i class="ri-upload-cloud-2-line upload-icon"></i>
+                            <div class="upload-text">点击或拖拽上传二维码图片</div>
+                            <div class="upload-hint">支持 JPG、PNG 格式</div>
+                            <input ref="customFileInput" type="file" accept="image/*" style="display: none;" @change="handleCustomFileSelect">
+                        </div>
+
+                        <div v-if="customPreview" class="qr-preview">
+                            <img :src="customPreview" alt="预览">
+                            <div class="qr-preview-info">{{ customForm.fileName }}</div>
+                        </div>
+
+                        <div style="margin-top: 20px; text-align: right;">
+                            <button class="btn btn-primary" @click="uploadCustomQrCode" :disabled="!customForm.file || customUploading">
+                                {{ customUploading ? '上传中...' : '上传' }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 固定金额收款码 -->
+                <div class="tab-content" :class="{ active: activeTab === 'fixed' }">
+                    <div class="card">
+                        <div class="card-title">上传固定金额收款码</div>
+                        <p style="color: var(--text-muted); margin-bottom: 20px;">
+                            为不同金额生成专属收款码，用户支付时无需填写备注
+                        </p>
+
+                        <div v-if="fixedAlert.show" :class="'alert alert-' + fixedAlert.type">
+                            {{ fixedAlert.message }}
+                        </div>
+
+                        <div class="form-group">
+                            <label>支付类型</label>
+                            <select v-model="fixedForm.payType">
+                                <option value="alipay">支付宝</option>
+                                <option value="wechat">微信支付</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>金额（元）</label>
+                            <input v-model="fixedForm.amount" type="text" placeholder="例如：10.01">
+                            <small>必须是两位小数，如 10.01、10.02</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>上传方式</label>
+                            <select v-model="fixedForm.uploadMode">
+                                <option value="single">单个上传</option>
+                                <option value="batch">批量上传</option>
+                            </select>
+                        </div>
+
+                        <div v-if="fixedForm.uploadMode === 'single'" class="form-group">
+                            <label>二维码编号</label>
+                            <input v-model.number="fixedForm.num" type="number" min="1" placeholder="1">
+                            <small>如果有多个相同金额的码，用编号区分（1, 2, 3...）</small>
+                        </div>
+
+                        <div class="upload-area" @click="$refs.fixedFileInput.click()" @dragover.prevent="handleDragOver" @dragleave.prevent="handleDragLeave" @drop.prevent="handleFixedDrop">
+                            <i class="ri-upload-cloud-2-line upload-icon"></i>
+                            <div class="upload-text">
+                                {{ fixedForm.uploadMode === 'batch' ? '点击或拖拽上传多个二维码' : '点击或拖拽上传二维码' }}
+                            </div>
+                            <div class="upload-hint">支持 JPG、PNG 格式</div>
+                            <input ref="fixedFileInput" type="file" accept="image/*" :multiple="fixedForm.uploadMode === 'batch'" style="display: none;" @change="handleFixedFileSelect">
+                        </div>
+
+                        <div v-if="fixedPreviews.length > 0" class="fixed-amount-list">
+                            <div v-for="(preview, index) in fixedPreviews" :key="index" class="fixed-amount-item">
+                                <img :src="preview.url" alt="预览">
+                                <div class="fixed-amount-label">{{ preview.name }}</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 20px; text-align: right;">
+                            <button class="btn btn-primary" @click="uploadFixedQrCode" :disabled="fixedForm.files.length === 0 || fixedUploading">
+                                {{ fixedUploading ? '上传中...' : '上传' }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    activeTab: 'custom',
+                    customForm: {
+                        type: 'alipay',
+                        file: null,
+                        fileName: ''
+                    },
+                    customPreview: null,
+                    customUploading: false,
+                    customAlert: { show: false, type: 'success', message: '' },
+
+                    fixedForm: {
+                        payType: 'alipay',
+                        amount: '',
+                        num: 1,
+                        uploadMode: 'single',
+                        files: []
+                    },
+                    fixedPreviews: [],
+                    fixedUploading: false,
+                    fixedAlert: { show: false, type: 'success', message: '' }
+                };
+            },
+            methods: {
+                handleDragOver(e) {
+                    e.currentTarget.classList.add('dragover');
+                },
+                handleDragLeave(e) {
+                    e.currentTarget.classList.remove('dragover');
+                },
+                handleCustomDrop(e) {
+                    e.currentTarget.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        this.processCustomFile(files[0]);
+                    }
+                },
+                handleCustomFileSelect(e) {
+                    const files = e.target.files;
+                    if (files.length > 0) {
+                        this.processCustomFile(files[0]);
+                    }
+                },
+                processCustomFile(file) {
+                    if (!file.type.startsWith('image/')) {
+                        this.showCustomAlert('error', '只能上传图片文件');
+                        return;
+                    }
+                    this.customForm.file = file;
+                    this.customForm.fileName = file.name;
+
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.customPreview = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                },
+                async uploadCustomQrCode() {
+                    if (!this.customForm.file) return;
+
+                    this.customUploading = true;
+                    const formData = new FormData();
+                    formData.append('file', this.customForm.file);
+                    formData.append('type', this.customForm.type);
+
+                    try {
+                        const response = await fetch('/admin/api/config/upload/qrcode', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        const result = await response.json();
+
+                        if (result.ok) {
+                            this.showCustomAlert('success', '上传成功！URL: ' + result.data);
+                            this.customForm.file = null;
+                            this.customForm.fileName = '';
+                            this.customPreview = null;
+                            this.$refs.customFileInput.value = '';
+                        } else {
+                            this.showCustomAlert('error', result.msg || '上传失败');
+                        }
+                    } catch (error) {
+                        this.showCustomAlert('error', '上传失败: ' + error.message);
+                    } finally {
+                        this.customUploading = false;
+                    }
+                },
+                showCustomAlert(type, message) {
+                    this.customAlert = { show: true, type, message };
+                    setTimeout(() => {
+                        this.customAlert.show = false;
+                    }, 5000);
+                },
+
+                handleFixedDrop(e) {
+                    e.currentTarget.classList.remove('dragover');
+                    const files = Array.from(e.dataTransfer.files);
+                    this.processFixedFiles(files);
+                },
+                handleFixedFileSelect(e) {
+                    const files = Array.from(e.target.files);
+                    this.processFixedFiles(files);
+                },
+                processFixedFiles(files) {
+                    const imageFiles = files.filter(f => f.type.startsWith('image/'));
+                    if (imageFiles.length === 0) {
+                        this.showFixedAlert('error', '只能上传图片文件');
+                        return;
+                    }
+
+                    this.fixedForm.files = imageFiles;
+                    this.fixedPreviews = [];
+
+                    imageFiles.forEach((file, index) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            this.fixedPreviews.push({
+                                url: e.target.result,
+                                name: file.name
+                            });
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                },
+                async uploadFixedQrCode() {
+                    if (this.fixedForm.files.length === 0) return;
+
+                    // 验证金额格式
+                    if (!/^\d+\.\d{2}$/.test(this.fixedForm.amount)) {
+                        this.showFixedAlert('error', '金额格式错误，必须是两位小数，如 10.01');
+                        return;
+                    }
+
+                    this.fixedUploading = true;
+                    const formData = new FormData();
+
+                    if (this.fixedForm.uploadMode === 'single') {
+                        formData.append('file', this.fixedForm.files[0]);
+                        formData.append('payType', this.fixedForm.payType);
+                        formData.append('amount', this.fixedForm.amount);
+                        formData.append('num', this.fixedForm.num);
+
+                        try {
+                            const response = await fetch('/admin/api/config/upload/fixed-amount-qrcode', {
+                                method: 'POST',
+                                body: formData
+                            });
+                            const result = await response.json();
+
+                            if (result.ok) {
+                                this.showFixedAlert('success', '上传成功！');
+                                this.resetFixedForm();
+                            } else {
+                                this.showFixedAlert('error', result.msg || '上传失败');
+                            }
+                        } catch (error) {
+                            this.showFixedAlert('error', '上传失败: ' + error.message);
+                        }
+                    } else {
+                        // 批量上传
+                        this.fixedForm.files.forEach(file => {
+                            formData.append('files', file);
+                        });
+                        formData.append('payType', this.fixedForm.payType);
+                        formData.append('amount', this.fixedForm.amount);
+
+                        try {
+                            const response = await fetch('/admin/api/config/upload/batch-fixed-amount-qrcode', {
+                                method: 'POST',
+                                body: formData
+                            });
+                            const result = await response.json();
+
+                            if (result.ok) {
+                                this.showFixedAlert('success', result.data || '批量上传成功！');
+                                this.resetFixedForm();
+                            } else {
+                                this.showFixedAlert('error', result.msg || '上传失败');
+                            }
+                        } catch (error) {
+                            this.showFixedAlert('error', '上传失败: ' + error.message);
+                        }
+                    }
+
+                    this.fixedUploading = false;
+                },
+                resetFixedForm() {
+                    this.fixedForm.files = [];
+                    this.fixedPreviews = [];
+                    this.$refs.fixedFileInput.value = '';
+                },
+                showFixedAlert(type, message) {
+                    this.fixedAlert = { show: true, type, message };
+                    setTimeout(() => {
+                        this.fixedAlert.show = false;
+                    }, 5000);
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

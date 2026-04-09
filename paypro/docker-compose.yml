@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  paypro-mysql:
+    image: mysql:5.7
+    container_name: paypro-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: paypro123456
+      MYSQL_DATABASE: pay
+      TZ: Asia/Shanghai
+    volumes:
+      - paypro_mysql_data:/var/lib/mysql
+      - ./src/main/resources/pay.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "3307:3306"
+    networks:
+      - new-api-network
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  paypro:
+    build: .
+    container_name: paypro
+    restart: always
+    depends_on:
+      - paypro-mysql
+    environment:
+      TZ: Asia/Shanghai
+      SPRING_DATASOURCE_URL: jdbc:mysql://paypro-mysql:3306/pay?useSSL=false&characterEncoding=utf-8&serverTimezone=GMT%2B8
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: paypro123456
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      PAYPRO_SITE: https://pay.isaint.cc
+      PAYPRO_OPENAPI_SECRET: newapi_paypro_secret_2026
+    ports:
+      - "8889:8889"
+    networks:
+      - new-api-network
+    volumes:
+      - ./src/main/resources/application.yml:/app/application.yml
+      - ./src/main/resources/templates:/app/templates
+      - paypro_qrcodes:/app/static/qrcodes
+      - paypro_fixed_qr:/app/static/qr
+
+volumes:
+  paypro_mysql_data:
+  paypro_qrcodes:
+  paypro_fixed_qr:
+
+networks:
+  new-api-network:
+    external: true
+    name: new-api_new-api-network
