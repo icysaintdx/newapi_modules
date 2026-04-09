@@ -1,40 +1,50 @@
-# 数据文件
-*.db
-*.sqlite
-*.log
-
-# 编译产物
-*.jar
-*.class
-target/
-channel-status/channel-status
-
-# 配置文件（包含敏感信息）
-**/application.yml
-**/application-*.yml
-.env
+# 敏感文件 - 不要提交到公开仓库
 *.pem
 *.key
+key.txt
+*.p12
+*.jks
 
-# IDE
+# 配置文件（包含密码和密钥）
+**/application.yml
+**/application-*.yml
+application.properties
+**/application-*.properties
+
+# 支付宝相关敏感文件
+**/qr/*.jpg
+**/qr/*.png
+**/assets/qr/*
+支付宝*.jpg
+支付宝*.png
+获取支付宝userId.jpg
+
+# 数据库备份
+*.sql
+*.dump
+
+# 日志文件
+*.log
+logs/
+
+# IDE 文件
 .idea/
 .vscode/
 *.iml
-
-# 系统文件
 .DS_Store
-Thumbs.db
 
-# Docker 数据卷
-data/
-logs/
+# 构建产物
+target/
+build/
+dist/
+*.jar
+*.war
 
-# 备份文件
-*.backup
-*.bak
-*.old
+# 依赖
+node_modules/
+vendor/
 
 # 临时文件
-tmp/
-temp/
 *.tmp
+*.swp
+*~
